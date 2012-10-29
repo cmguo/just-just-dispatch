@@ -4,12 +4,17 @@
 #include "ppbox/dispatch/Dispatcher.h"
 #include "ppbox/dispatch/mux/MuxDispatcher.h"
 
+#include <framework/logger/Logger.h>
+#include <framework/logger/StreamRecord.h>
+
 #include <boost/bind.hpp>
 
 namespace ppbox
 {
     namespace dispatch
     {
+
+        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.Dispatcher", framework::logger::Debug);
 
         std::multimap<size_t, Dispatcher::register_type> & Dispatcher::dispatcher_map()
         {
@@ -51,6 +56,7 @@ namespace ppbox
             boost::asio::io_service & dispatch_io_svc)
             : DispatcherBase(io_svc)
             , dispatch_io_svc_(dispatch_io_svc)
+            , async_type_(none)
         {
         }
 
@@ -62,10 +68,12 @@ namespace ppbox
             framework::string::Url const & url, 
             response_t const & resp)
         {
+            LOG_DEBUG("[async_open]");
+
             assert(async_type_ == none);
             async_type_ = open;
             resp_ = resp;
-            do_open(url);
+            start_open(url);
         }
 
         bool Dispatcher::setup(
@@ -73,6 +81,8 @@ namespace ppbox
             util::stream::Sink & sink, 
             boost::system::error_code & ec)
         {
+            LOG_DEBUG("[setup]");
+
             do_setup(index, ec);
             if (!ec) {
                 sink_group_.setup(index, sink);
@@ -84,6 +94,8 @@ namespace ppbox
             SinkGroup const & sink_group, 
             boost::system::error_code & ec)
         {
+            LOG_DEBUG("[setup]");
+
             if (sink_group.default_sink_is_set()) {
                 do_setup(-1, ec);
             } else {
@@ -107,25 +119,30 @@ namespace ppbox
             response_t const & seek_resp, 
             response_t const & resp)
         {
+            LOG_DEBUG("[async_play]");
+
             assert(async_type_ == none);
             async_type_ = play;
-            seek_resp_ = seek_resp;
             resp_ = resp;
-            do_play(range);
+            start_play(range, seek_resp);
         }
 
         void Dispatcher::async_buffer(
             response_t const & resp)
         {
+            LOG_DEBUG("[async_buffer]");
+
             assert(async_type_ == none);
             async_type_ = buffer;
             resp_ = resp;
-            do_buffer();
+            start_buffer();
         }
 
         bool Dispatcher::cancel(
             boost::system::error_code & ec)
         {
+            LOG_DEBUG("[cancel]");
+
             assert(async_type_ != none);
             switch (async_type_) {
                 case open:
@@ -146,18 +163,14 @@ namespace ppbox
         bool Dispatcher::close(
             boost::system::error_code & ec)
         {
+            LOG_DEBUG("[close]");
+
             assert(async_type_ == none);
             do_close(ec);
             return !(ec);
         }
 
         void Dispatcher::response(
-            boost::system::error_code const & ec)
-        {
-            io_svc().dispatch(boost::bind(&Dispatcher::response2, this, ec));
-        }
-
-        void Dispatcher::response2(
             boost::system::error_code const & ec)
         {
             assert(async_type_ != none);

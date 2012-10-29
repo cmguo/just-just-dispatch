@@ -29,8 +29,9 @@ namespace ppbox
             boost::system::error_code const & ec)
         {
             if (!resp_.empty()) {
-                resp_(ec);
-                resp_.clear();
+                response_t resp;
+                resp_.swap(resp);
+                resp(ec);
             } else {
                 assert(!play_reqs_.empty());
                 play_reqs_.front().resp(ec);
@@ -38,9 +39,10 @@ namespace ppbox
             }
         }
 
-        void Session::cancel()
+        void Session::cancel(
+            boost::system::error_code const & ec)
         {
-            response_all(boost::asio::error::operation_aborted);
+            response_all(ec);
         }
 
         void Session::mark_close()
@@ -61,14 +63,16 @@ namespace ppbox
             assert(opened());
             assert(!closed());
             play_reqs_.push_back(r);
+            play_reqs_.back().session = this;
         }
 
         void Session::response_all(
             boost::system::error_code const & ec)
         {
             if (!resp_.empty()) {
-                resp_(ec);
-                resp_.clear();
+                response_t resp;
+                resp_.swap(resp);
+                resp(ec);
             } else {
                 for (size_t i = 0; i < play_reqs_.size(); ++i) {
                     play_reqs_[i].resp(ec);

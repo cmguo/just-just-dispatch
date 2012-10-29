@@ -72,6 +72,10 @@ namespace ppbox
             virtual bool accept(
                 framework::string::Url const & url) = 0;
 
+            virtual bool assign(
+                framework::string::Url const & url, 
+                boost::system::error_code & ec) = 0;
+
             virtual void async_buffer(
                 response_t const & resp);
 
@@ -94,17 +98,18 @@ namespace ppbox
             }
 
         private:
-            virtual void do_open(
+            virtual void start_open(
                 framework::string::Url const & url) = 0;
 
             virtual void do_setup(
                 boost::uint32_t index, 
                 boost::system::error_code & ec) = 0;
 
-            virtual void do_play(
-                SeekRange const & range) = 0;
+            virtual void start_play(
+                SeekRange const & range, 
+                response_t const & seek_resp) = 0;
 
-            virtual void do_buffer() = 0;
+            virtual void start_buffer() = 0;
 
             virtual void cancel_open(
                 boost::system::error_code & ec) = 0;
@@ -117,10 +122,6 @@ namespace ppbox
 
             virtual void do_close(
                 boost::system::error_code & ec) = 0;
-
-        private:
-            void response2(
-                boost::system::error_code const & ec);
 
         private:
             static std::multimap<size_t, register_type> & dispatcher_map();
@@ -137,7 +138,6 @@ namespace ppbox
         private:
             boost::asio::io_service & dispatch_io_svc_;
             AsyncTypeEnum async_type_;
-            response_t seek_resp_;
             response_t resp_;
             SinkGroup sink_group_;
         };

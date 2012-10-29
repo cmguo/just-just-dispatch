@@ -17,8 +17,15 @@ namespace ppbox
         {
         public:
             TaskBase(
+                boost::asio::io_service & io_svc, 
+                response_t const & resp, 
+                bool const & cancel_token);
+
+            TaskBase(
+                boost::asio::io_service & io_svc, 
                 SinkGroup & sinks, 
                 SeekRange const & range, 
+                response_t const & seek_resp, 
                 response_t const & resp, 
                 bool const & cancel_token, 
                 bool const & pause_token);
@@ -71,8 +78,15 @@ namespace ppbox
             void sleep() const;
 
         protected:
+            void response(
+                response_t const & resp, 
+                boost::system::error_code const & ec) const;
+
+        protected:
+            boost::asio::io_service & io_svc_;
             SinkGroup & sinks_;
             SeekRange range_;
+            response_t seek_resp_;
             response_t resp_;
             bool const & cancel_;
             bool const & pause_;
@@ -88,12 +102,22 @@ namespace ppbox
         {
         public:
             Task(
+                boost::asio::io_service & io_svc, 
+                response_t const & resp, 
+                bool const & cancel_token)
+                : TaskBase(io_svc, resp, cancel_token)
+            {
+            }
+
+            Task(
+                boost::asio::io_service & io_svc, 
                 SinkGroup & sinks, 
                 SeekRange const & range, 
+                response_t const & seek_resp, 
                 response_t const & resp, 
                 bool const & cancel_token, 
                 bool const & pause_token)
-                : TaskBase(sinks, range, resp, cancel_token, pause_token)
+                : TaskBase(io_svc, sinks, range, seek_resp, resp, cancel_token, pause_token)
             {
             }
 
@@ -120,9 +144,12 @@ namespace ppbox
                     if (!task.write_continuable(ec)) {
                         break;
                     }
-                    for (size_t i = 0; i < 10 && !cancel_ && !buffer_finish_; ++i) {
-                        if (!task.buffer(ec) && !task.read_continuable(ec)) {
-                            buffer_finish_ = true;
+                    if (!buffer_finish_) {
+                        for (size_t i = 0; i < 10 && !cancel_; ++i) {
+                            if (!task.buffer(ec) && !task.read_continuable(ec)) {
+                                buffer_finish_ = true;
+                                break;
+                            }
                         }
                     }
                     task.sleep();
@@ -173,11 +200,31 @@ namespace ppbox
                 if (cancel_)
                     ec = boost::asio::error::operation_aborted;
 
-                resp_(ec);
+                response(resp_, ec);
             }
 
             void do_buffer()
             {
+                TaskImpl & task = static_cast<TaskImpl &>(*this);
+
+                boost::system::error_code ec;
+
+                while (!cancel_ && !buffer_finish_) {
+                    for (size_t i = 0; i < 10 && !cancel_; ++i) {
+                        if (!task.buffer(ec) && !task.read_continuable(ec)) {
+                            buffer_finish_ = true;
+                            break;
+                        }
+                    }
+                    if (buffer_finish_)
+                        break;
+                    task.sleep();
+                }
+
+                if (cancel_)
+                    ec = boost::asio::error::operation_aborted;
+
+                response(resp_, ec);
             }
         };
 

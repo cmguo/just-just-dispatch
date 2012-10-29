@@ -5,6 +5,7 @@
 #include "ppbox/dispatch/Session.h"
 
 #include <boost/thread.hpp>
+#include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace ppbox
@@ -13,16 +14,34 @@ namespace ppbox
     {
 
         TaskBase::TaskBase(
+            boost::asio::io_service & io_svc, 
+            response_t const & resp, 
+            bool const & cancel_token)
+            : io_svc_(io_svc)
+            , sinks_(*(SinkGroup *)NULL)
+            , resp_(resp)
+            , cancel_(cancel_token)
+            , pause_(cancel_token)
+            , buffer_finish_(false)
+        {
+        }
+
+        TaskBase::TaskBase(
+            boost::asio::io_service & io_svc, 
             SinkGroup & sinks, 
             SeekRange const & range, 
+            response_t const & seek_resp, 
             response_t const & resp, 
             bool const & cancel_token, 
             bool const & pause_token)
-            : sinks_(sinks)
+            : io_svc_(io_svc)
+            , sinks_(sinks)
             , range_(range)
+            , seek_resp_(seek_resp)
             , resp_(resp)
             , cancel_(cancel_token)
             , pause_(pause_token)
+            , buffer_finish_(false)
         {
         }
 
@@ -50,6 +69,13 @@ namespace ppbox
         void TaskBase::sleep() const
         {
             boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+        }
+
+        void TaskBase::response(
+            response_t const & resp, 
+            boost::system::error_code const & ec) const
+        {
+            io_svc_.post(boost::bind(resp, ec));
         }
 
     } // namespace dispatch

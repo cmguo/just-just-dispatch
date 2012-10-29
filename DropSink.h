@@ -16,24 +16,12 @@ namespace ppbox
             : public util::stream::Sink
         {
         public:
-            DropSink()
-                : util::stream::Sink(*(boost::asio::io_service *)NULL)
-            {
-            }
-
-            virtual ~DropSink() {}
+            DropSink();
 
         private:
             virtual std::size_t private_write_some(
                 util::stream::StreamConstBuffers const & buffers,
-                boost::system::error_code & ec)
-            {
-                ec.clear();
-                return 0;
-            }
-
-        private:
-            
+                boost::system::error_code & ec);
         };
 
     } // namespace dispatch

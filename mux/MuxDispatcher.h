@@ -51,18 +51,23 @@ namespace ppbox
             virtual bool accept(
                 framework::string::Url const & url);
 
+            virtual bool assign(
+                framework::string::Url const & url, 
+                boost::system::error_code & ec);
+
         private:
-            virtual void do_open(
+            virtual void start_open(
                 framework::string::Url const & url);
 
             virtual void do_setup(
                 boost::uint32_t index,      // Á÷±àºÅ
                 boost::system::error_code & ec); 
 
-            virtual void do_play(
-                SeekRange const & range);
+            virtual void start_play(
+                SeekRange const & range, 
+                response_t const & seek_resp);
 
-            virtual void do_buffer();
+            virtual void start_buffer();
 
             virtual void cancel_open(
                 boost::system::error_code & ec);

@@ -27,7 +27,8 @@ namespace ppbox
             void response(
                 boost::system::error_code const & ec);
 
-            void cancel();
+            void cancel(
+                boost::system::error_code const & ec);
 
             void mark_close();
 

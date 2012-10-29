@@ -5,6 +5,8 @@
 
 #include "ppbox/dispatch/DispatchBase.h"
 
+#include <framework/timer/ClockTime.h>
+
 #include <boost/asio/deadline_timer.hpp>
 
 namespace ppbox
@@ -89,23 +91,27 @@ namespace ppbox
             void handle_request(
                 boost::system::error_code const & ec);
 
-            void handle_timer(
-                boost::system::error_code const & ec);
+            void next_request();
 
             Session * user_session(
                 boost::uint32_t sid,        // »á»°ID
                 boost::system::error_code & ec);
 
-            void async_wait(
-                boost::uint32_t wait_timer) ;
+            void start_timer();
 
-            void cancel_wait(
-                boost::system::error_code & ec);
+            void cancel_timer();
+
+            void handle_timer(
+                boost::uint32_t timer_id, 
+                boost::system::error_code const & ec);
 
         private:
             boost::asio::io_service & io_svc_;
-            boost::asio::deadline_timer timer_;
-            boost::uint32_t time_id_;
+            typedef boost::asio::basic_deadline_timer<
+                framework::timer::ClockTime> timer_t;
+            timer_t timer_;
+            boost::uint32_t timer_id_;
+            bool timer_lanched_;
 
         private:
             DispatchThread * thread_;

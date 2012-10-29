@@ -3,6 +3,7 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/mux/MuxDispatcher.h"
 #include "ppbox/dispatch/mux/MuxTask.h"
+#include "ppbox/dispatch/Error.h"
 
 #include <ppbox/mux/MuxModule.h>
 #include <ppbox/mux/MuxError.h>
@@ -42,10 +43,11 @@ namespace ppbox
         {
         }
 
-        void MuxDispatcher::do_open(
+        void MuxDispatcher::start_open(
             framework::string::Url const & url)
         {
-            LOG_INFO("[do_open] playlink:"<< url.param("playlink"));
+            LOG_DEBUG("[start_open] playlink:"<< url.param("playlink"));
+            format_ = url.param("format");
             demuxer_module_.async_open(
                 framework::string::Url(url.param("playlink")), 
                 demux_close_token_, 
@@ -56,15 +58,25 @@ namespace ppbox
             boost::system::error_code const & ec,
             ppbox::demux::SegmentDemuxer * demuxer)
         {
-            LOG_INFO("[handle_open] ec:"<<ec.message());
+            LOG_DEBUG("[handle_open] ec:" << ec.message());
             demuxer_ = demuxer;
+            if (!ec) {
+                muxer_ = muxer_module_.open(
+                    demuxer_, 
+                    format_, 
+                    mux_close_token_);
+                if (muxer_ == NULL) {
+                    response(error::not_support);
+                    return;
+                }
+            }
             response(ec);
         }
 
         void MuxDispatcher::cancel_open(
             boost::system::error_code & ec)
         {
-            LOG_INFO("[cancel_open_playlink]");
+            LOG_DEBUG("[cancel_open]");
             demuxer_module_.close(demux_close_token_,ec);
             demux_close_token_ = 0;
             demuxer_ = NULL;
@@ -74,13 +86,14 @@ namespace ppbox
             boost::uint32_t index, 
             boost::system::error_code & ec)
         {
+            LOG_DEBUG("[do_setup]");
             //muxer_->setup(index, ec);
         }
 
         bool MuxDispatcher::pause(
             boost::system::error_code & ec)
         {
-            LOG_INFO("[pause]");
+            LOG_DEBUG("[pause]");
             pause_token_ = true;
             ec.clear();
             return true;
@@ -89,17 +102,18 @@ namespace ppbox
         bool MuxDispatcher::resume(
             boost::system::error_code & ec)
         {
-            LOG_INFO("[resume]");
+            LOG_DEBUG("[resume]");
             pause_token_ = false;
             ec.clear();
             return true;
         }
 
-        void MuxDispatcher::do_play(
-            SeekRange const & range)
+        void MuxDispatcher::start_play(
+            SeekRange const & range, 
+            response_t const & seek_resp)
         {
-            LOG_INFO("[do_play]");
-            dispatch_io_svc().post(MuxTask(sink_group(), range, 
+            LOG_DEBUG("[start_play]");
+            dispatch_io_svc().post(MuxTask(io_svc(), sink_group(), range, seek_resp, 
                 boost::bind(&MuxDispatcher::handle_play, this, _1), 
                 cancel_token_, pause_token_, demuxer_, muxer_));
         }
@@ -107,7 +121,7 @@ namespace ppbox
         void MuxDispatcher::handle_play(
             boost::system::error_code const & ec)
         {
-            LOG_INFO("[handle_play] ec:"<<ec.message());
+            LOG_DEBUG("[handle_play] ec:"<<ec.message());
             cancel_token_ = false;
             pause_token_ = false;
             response(ec);
@@ -116,24 +130,22 @@ namespace ppbox
         void MuxDispatcher::cancel_play(
             boost::system::error_code & ec)
         {
-            LOG_INFO("[cancel_play_playlink]");
+            LOG_DEBUG("[cancel_play]");
             cancel_token_ = true;
         }
 
-        void MuxDispatcher::do_buffer()
+        void MuxDispatcher::start_buffer()
         {
-            LOG_INFO("[do_buffer]");
-            cancel_token_ = false;
-            pause_token_ = false;
-            dispatch_io_svc().post(MuxTask(*(SinkGroup *)NULL, SeekRange(), 
+            LOG_DEBUG("[start_buffer]");
+            dispatch_io_svc().post(MuxTask(io_svc(), 
                 boost::bind(&MuxDispatcher::handle_buffer, this, _1), 
-                cancel_token_, pause_token_, demuxer_, muxer_));
+                cancel_token_, demuxer_, muxer_));
         }
 
         void MuxDispatcher::handle_buffer(
             boost::system::error_code const & ec)
         {
-            LOG_INFO("[handle_buffer] ec:"<<ec.message());
+            LOG_DEBUG("[handle_buffer] ec:"<<ec.message());
             cancel_token_ = false;
             pause_token_ = false;
             response(ec);
@@ -142,14 +154,14 @@ namespace ppbox
         void MuxDispatcher::cancel_buffer(
             boost::system::error_code & ec)
         {
-            LOG_INFO("[cancel_buffering]");
+            LOG_DEBUG("[cancel_buffer]");
             cancel_token_ = true;
         }
 
         void MuxDispatcher::do_close(
             boost::system::error_code & ec)
         {
-            LOG_INFO("[close_playlink]");
+            LOG_DEBUG("[do_close]");
             if (mux_close_token_) {
                 muxer_module_.close(mux_close_token_, ec);
                 mux_close_token_ = 0;
@@ -166,7 +178,7 @@ namespace ppbox
             ppbox::data::MediaInfo & info, 
             boost::system::error_code & ec)
         {
-            LOG_INFO("[get_media_info]");
+            LOG_DEBUG("[get_media_info]");
             muxer_->media_info(info);
             ec.clear();
             return true;
@@ -176,7 +188,7 @@ namespace ppbox
             ppbox::data::MediaInfo & info, 
             boost::system::error_code & ec)
         {
-            LOG_INFO("[get_play_info]");
+            LOG_DEBUG("[get_play_info]");
             return true;
         }
 
@@ -186,10 +198,34 @@ namespace ppbox
             return true;
         }
 
+        bool MuxDispatcher::assign(
+            framework::string::Url const & url, 
+            boost::system::error_code & ec)
+        {
+            std::string format = url.param("format");
+            if (format_ != format) {
+                if (mux_close_token_) {
+                    muxer_module_.close(mux_close_token_, ec);
+                    mux_close_token_ = 0;
+                    muxer_ = NULL;
+                }
+                muxer_ = muxer_module_.open(
+                    demuxer_, 
+                    format_, 
+                    mux_close_token_);
+                if (muxer_ == NULL) {
+                    ec = error::not_support;
+                    return false;
+                }
+                format_ = format;
+            }
+            return true;
+        }
+
 /*
         void MuxDispatcher::open_format(std::string const &format,boost::system::error_code& ec)
         {
-            LOG_INFO("[open_format]");
+            LOG_DEBUG("[open_format]");
             if (format_ != format)
             {
                 close_format(ec);
@@ -204,7 +240,7 @@ namespace ppbox
 
         void MuxDispatcher::close_format(boost::system::error_code& ec)
         {
-            LOG_INFO("[close_format]");
+            LOG_DEBUG("[close_format]");
             if (mux_close_token_)
             {
                 muxer_module_.close(mux_close_token_,ec);

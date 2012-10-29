@@ -19,19 +19,33 @@ namespace ppbox
         {
         public:
             MuxTask(
+                boost::asio::io_service & io_svc, 
                 SinkGroup & sinks, 
                 SeekRange const & range, 
+                response_t const & seek_resp, 
                 response_t const & resp, 
                 bool const & cancel_token, 
                 bool const & pause_token, 
                 ppbox::demux::SegmentDemuxer* demuxer,
                 ppbox::mux::MuxerBase *muxer)
-                : Task<MuxTask>(sinks, range, resp, cancel_token, pause_token)
+                : Task<MuxTask>(io_svc, sinks, range, seek_resp, resp, cancel_token, pause_token)
                 , demuxer_(demuxer)
                 , muxer_(muxer)
             {
             }
             
+            MuxTask(
+                boost::asio::io_service & io_svc, 
+                response_t const & resp, 
+                bool const & cancel_token, 
+                ppbox::demux::SegmentDemuxer* demuxer,
+                ppbox::mux::MuxerBase *muxer)
+                : Task<MuxTask>(io_svc, resp, cancel_token)
+                , demuxer_(demuxer)
+                , muxer_(muxer)
+            {
+            }
+
             bool read_sample(
                 ppbox::avformat::Sample & sample, 
                 boost::system::error_code & ec)

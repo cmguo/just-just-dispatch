@@ -19,6 +19,7 @@ namespace ppbox
             SessionManager & manager)
             : DispatcherBase(manager.io_svc())
             , manager_(manager)
+            , session_id_(0)
         {
         }
 
