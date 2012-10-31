@@ -78,21 +78,25 @@ namespace ppbox
 
             assert(busy());
             if (status_ == openning) {
-                for (size_t i = 0; i < sessions_.size(); ++i) {
-                    sessions_[i]->response(ec);
-                }
+                // 先处理好内部状态，再调用回调
                 if (ec) {
                     current_ = next_ = delete_session;
                 } else {
                     current_ = next_ = buffer_session;
                 }
+                status_ = openned;
+                for (size_t i = 0; i < sessions_.size(); ++i) {
+                    sessions_[i]->response(ec);
+                }
             } else {
                 assert(current_);
                 assert(current_ != delete_session);
+                Session * current = current_;
+                // 先处理好内部状态，再调用回调
                 if (current_ != buffer_session) {
-                    current_->response(ec);
+                    //current_->response(ec);
                     if (current_->closed()) {
-                        current_->close(boost::asio::error::operation_aborted);
+                        //current_->close(boost::asio::error::operation_aborted);
                         std::vector<Session *>::iterator iter = 
                             std::find(sessions_.begin(), sessions_.end(), current_);
                         assert(iter != sessions_.end());
@@ -100,22 +104,34 @@ namespace ppbox
                         if (next_ == current_) {
                             next_ = NULL;
                         }
-                        delete current_;
+                        //delete current_;
                         current_ = NULL;
                     }
                 }
                 if (next_ != current_) {
-                    if (current_ != buffer_session && current_ != NULL) {
-                        current_->cancel(error::session_kick_out); // 回话不立即关闭，还可以接收新的请求
-                    }
+                    //if (current_ != buffer_session && current_ != NULL) {
+                    //    current_->cancel(error::session_kick_out); // 回话不立即关闭，还可以接收新的请求
+                    //}
                     current_ = next_;
                 } else if (current_ == buffer_session) {
                     current_ = next_ = NULL;
                 } else if (current_ == NULL) {
                     current_ = next_ = buffer_session;
                 }
+                status_ = openned;
+                // 调用延迟回调
+                if (current != buffer_session) {
+                    current->response(ec);
+                    if (current != current_) {
+                        if (current->closed()) {
+                            current->close(boost::asio::error::operation_aborted);
+                            delete current;
+                        } else {
+                            current->cancel(error::session_kick_out); // 回话不立即关闭，还可以接收新的请求
+                        }
+                    }
+                }
             }
-            status_ = openned;
         }
 
         void SessionGroup::close(
@@ -193,10 +209,10 @@ namespace ppbox
                 if (ses == next_) {
                     next_ = current_;
                 }
-                ses->close(boost::asio::error::operation_aborted);
                 sessions_.erase(iter);
-                delete ses;
                 need_next = sessions_.empty();
+                ses->close(boost::asio::error::operation_aborted);
+                delete ses;
             }
             return need_next;
         }

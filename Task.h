@@ -32,14 +32,16 @@ namespace ppbox
 
         public:
             bool byte_seek(
-                boost::uint64_t offset, 
+                boost::uint64_t beg, 
+                boost::uint64_t end, 
                 boost::system::error_code & ec)
             {
                 return false;
             }
 
             bool time_seek(
-                boost::uint64_t offset, 
+                boost::uint64_t beg, 
+                boost::uint64_t end, 
                 boost::system::error_code & ec)
             {
                 return false;
@@ -172,11 +174,21 @@ namespace ppbox
 
                 // ÍÏ¶¯
 
-                //while (!cancel()) {
-                //    if (req_.beg != invalid_size) {
+                if (range_.type == SeekRange::byte) {
+                    task.byte_seek(range_.beg, range_.end, ec);
+                } else if (range_.type == SeekRange::time) {
+                    task.time_seek(range_.beg, range_.end, ec);
+                }
 
-                //    }
-                //}
+                if (seek_resp_) {
+                    response(seek_resp_, ec);
+                    seek_resp_.clear();
+                }
+
+                if (ec) {
+                    response(resp_, ec);
+                    return;
+                }
 
                 while (!cancel_) {
                     if (pause_) {

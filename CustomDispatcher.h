@@ -1,7 +1,7 @@
-// SharedDispatcher.h
+// CustomDispatcher.h
 
-#ifndef _PPBOX_DISPATCH_SHARED_DISPATCHER_H_
-#define _PPBOX_DISPATCH_SHARED_DISPATCHER_H_
+#ifndef _PPBOX_DISPATCH_CUSTOM_DISPATCHER_H_
+#define _PPBOX_DISPATCH_CUSTOM_DISPATCHER_H_
 
 #include "ppbox/dispatch/DispatcherBase.h"
 
@@ -12,14 +12,14 @@ namespace ppbox
 
         class SessionManager;
 
-        class SharedDispatcher
+        class CustomDispatcher
             : public DispatcherBase
         {
         public:
-            SharedDispatcher(
-                SessionManager & manager);
+            CustomDispatcher(
+                DispatcherBase & dispatcher);
 
-            virtual ~SharedDispatcher();
+            virtual ~CustomDispatcher();
 
         public:
             virtual void async_open(
@@ -56,12 +56,11 @@ namespace ppbox
                 ppbox::data::MediaInfo & info, 
                 boost::system::error_code & ec);
 
-        private:
-            SessionManager & manager_;
-            boost::uint32_t session_id_;
+        protected:
+            DispatcherBase & dispatcher_;
         };
 
     } // namespace dispatch
 } // namespace ppbox
 
-#endif // _PPBOX_DISPATCH_SHARED_DISPATCHER_H_
+#endif // _PPBOX_DISPATCH_CUSTOM_DISPATCHER_H_

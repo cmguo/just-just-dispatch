@@ -92,14 +92,19 @@ namespace ppbox
             void handle_buffer(
                 boost::system::error_code const & ec);
 
+            void open_muxer(
+                boost::system::error_code & ec);
+
+            void close_muxer(
+                boost::system::error_code & ec);
+
         private:
             ppbox::demux::DemuxModule & demuxer_module_;
             ppbox::mux::MuxModule & muxer_module_;
 
             size_t  demux_close_token_;      
-            size_t  mux_close_token_;
-            ppbox::mux::MuxerBase *muxer_;
             ppbox::demux::SegmentDemuxer* demuxer_;
+            ppbox::mux::MuxerBase *muxer_;
 
             std::string format_;
 

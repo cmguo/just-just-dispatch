@@ -31,9 +31,8 @@ namespace ppbox
             , demuxer_module_(util::daemon::use_module<ppbox::demux::DemuxModule>(io_svc))
             , muxer_module_(util::daemon::use_module<ppbox::mux::MuxModule>(io_svc))
             , demux_close_token_(0)
-            , mux_close_token_(0)
-            , muxer_(NULL)
             , demuxer_(NULL)
+            , muxer_(NULL)
             , cancel_token_(false)
             , pause_token_(false)
         {
@@ -60,17 +59,11 @@ namespace ppbox
         {
             LOG_DEBUG("[handle_open] ec:" << ec.message());
             demuxer_ = demuxer;
-            if (!ec) {
-                muxer_ = muxer_module_.open(
-                    demuxer_, 
-                    format_, 
-                    mux_close_token_);
-                if (muxer_ == NULL) {
-                    response(error::not_support);
-                    return;
-                }
+            boost::system::error_code ec1 = ec;
+            if (!ec1) {
+                open_muxer(ec1);
             }
-            response(ec);
+            response(ec1);
         }
 
         void MuxDispatcher::cancel_open(
@@ -162,11 +155,7 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[do_close]");
-            if (mux_close_token_) {
-                muxer_module_.close(mux_close_token_, ec);
-                mux_close_token_ = 0;
-                muxer_ = NULL;
-            }
+            close_muxer(ec);
             if (demux_close_token_) {
                 demuxer_module_.close(demux_close_token_, ec);
                 demux_close_token_ = 0;
@@ -203,82 +192,38 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             std::string format = url.param("format");
+            ec.clear();
             if (format_ != format) {
-                if (mux_close_token_) {
-                    muxer_module_.close(mux_close_token_, ec);
-                    mux_close_token_ = 0;
-                    muxer_ = NULL;
-                }
-                muxer_ = muxer_module_.open(
-                    demuxer_, 
-                    format_, 
-                    mux_close_token_);
-                if (muxer_ == NULL) {
-                    ec = error::not_support;
-                    return false;
-                }
+                close_muxer(ec);
                 format_ = format;
+                open_muxer(ec);
             }
-            return true;
+            if (!ec) {
+                muxer_->reset(ec);
+            }
+            return !ec;
         }
 
-/*
-        void MuxDispatcher::open_format(std::string const &format,boost::system::error_code& ec)
+        void MuxDispatcher::open_muxer(
+            boost::system::error_code & ec)
         {
-            LOG_DEBUG("[open_format]");
-            if (format_ != format)
-            {
-                close_format(ec);
-                format_ = format;
-
-                muxer_ = muxer_module_.open(
-                    demuxer_,
-                    format,
-                    mux_close_token_);
-            }
+            LOG_DEBUG("[open_muxer]");
+            muxer_ = muxer_module_.open(
+                demuxer_, 
+                format_, 
+                ec);
         }
 
-        void MuxDispatcher::close_format(boost::system::error_code& ec)
+        void MuxDispatcher::close_muxer(
+            boost::system::error_code& ec)
         {
-            LOG_DEBUG("[close_format]");
-            if (mux_close_token_)
-            {
-                muxer_module_.close(mux_close_token_,ec);
-                mux_close_token_ = 0;
+            LOG_DEBUG("[close_muxer]");
+            if (muxer_) {
+                muxer_module_.close(muxer_,ec);
                 muxer_ = NULL;
-                format_.clear();
             }
+            ec.clear();
         }
 
-        boost::system::error_code MuxDispatcher::get_sdp(
-            std::string & sdp_out,
-            boost::system::error_code & ec)
-        {
-            ((ppbox::mux::RtpMuxer *)muxer_)->get_sdp(sdp_out, ec); 
-            return ec;
-        }
-
-        boost::system::error_code MuxDispatcher::get_setup(
-            boost::uint32_t index,
-            std::string & setup_out,
-            boost::system::error_code & ec)
-        {
-            ((ppbox::mux::RtpMuxer *)muxer_)->setup(index, setup_out, ec);
-            return ec;
-        }
-
-        boost::system::error_code MuxDispatcher::get_rtp_info(
-            std::string & rtp_info_out,
-            boost::uint32_t & seek_time,
-            boost::system::error_code & ec)
-        {
-            ec = player_->seek(seek_time);
-            if (!ec)
-            {
-                ((ppbox::mux::RtpMuxer *)muxer_)->get_rtp_info(rtp_info_out, seek_time, ec);
-            }
-            return ec;
-        }
-*/
     } // namespace mux
 } // namespace ppbox

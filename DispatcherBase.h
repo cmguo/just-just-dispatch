@@ -56,7 +56,7 @@ namespace ppbox
             virtual bool close(
                 boost::system::error_code & ec) = 0;
 
-        protected:
+        public:
             boost::asio::io_service & io_svc()
             {
                 return io_svc_;

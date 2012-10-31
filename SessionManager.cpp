@@ -265,10 +265,18 @@ namespace ppbox
             LOG_XXX("handle_request");
 
             assert(current_);
-            current_->response(ec);
+            // 先处理好内部状态，再调用回调
+            SessionGroup * current = current_;
             if (next_ != current_) {
-                current_->close(error::session_kick_out);
                 current_ = next_;
+            }
+            current->response(ec);
+            if (current != current_) {
+                current->close(error::session_kick_out);
+                boost::system::error_code ec1;
+                current->dispatcher().close(ec1);
+                delete &current->dispatcher();
+                delete current;
             }
 
             next_request();
