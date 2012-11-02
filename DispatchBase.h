@@ -4,6 +4,7 @@
 #define _PPBOX_DISPATCH_DISPATCH_BASE_H_
 
 #include <ppbox/data/MediaInfo.h>
+#include <ppbox/data/PlayInfo.h>
 
 #include <util/stream/Sink.h>
 
@@ -18,6 +19,9 @@ namespace ppbox
 
         typedef boost::function<void (
             boost::system::error_code const &)> response_t;
+
+        static char const * const param_playlink = "playlink";
+        static char const * const param_format = "format";
 
         struct SeekRange
         {

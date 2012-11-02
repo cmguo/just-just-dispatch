@@ -50,7 +50,7 @@ namespace ppbox
                 boost::system::error_code & ec) = 0;
 
             virtual bool get_play_info(
-                ppbox::data::MediaInfo & info, 
+                ppbox::data::PlayInfo & info, 
                 boost::system::error_code & ec) = 0;
 
             virtual bool close(

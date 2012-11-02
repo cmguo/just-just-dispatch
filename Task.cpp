@@ -14,33 +14,26 @@ namespace ppbox
     {
 
         TaskBase::TaskBase(
-            boost::asio::io_service & io_svc, 
-            response_t const & resp, 
-            bool const & cancel_token)
-            : io_svc_(io_svc)
+            TaskConfig & config, 
+            response_t const & resp)
+            : config_(config)
             , sinks_(*(SinkGroup *)NULL)
             , resp_(resp)
-            , cancel_(cancel_token)
-            , pause_(cancel_token)
             , buffer_finish_(false)
         {
         }
 
         TaskBase::TaskBase(
-            boost::asio::io_service & io_svc, 
+            TaskConfig & config, 
             SinkGroup & sinks, 
             SeekRange const & range, 
             response_t const & seek_resp, 
-            response_t const & resp, 
-            bool const & cancel_token, 
-            bool const & pause_token)
-            : io_svc_(io_svc)
+            response_t const & resp)
+            : config_(config)
             , sinks_(sinks)
             , range_(range)
             , seek_resp_(seek_resp)
             , resp_(resp)
-            , cancel_(cancel_token)
-            , pause_(pause_token)
             , buffer_finish_(false)
         {
         }
@@ -54,7 +47,9 @@ namespace ppbox
             size_t n = sinks_.write(sample.itrack, sample.data, ec);
             if (n == sample.size) {
                 sample.data.clear();
+                return true;
             } else {
+                sample.size -= n;
                 while (n >= buffer_size(sample.data.front())) {
                     n -= buffer_size(sample.data.front());
                     sample.data.pop_front();
@@ -62,8 +57,21 @@ namespace ppbox
                 if (n) {
                     sample.data.front() = sample.data.front() + n;
                 }
+                if (!ec) {
+                    ec = boost::asio::error::would_block;
+                }
+                return false;
             }
-            return !ec;
+        }
+
+        void TaskBase::check_speed(
+            ppbox::avformat::Sample const & sample) const
+        {
+            framework::timer::Time send_time = start_time_ 
+                + framework::timer::Duration::milliseconds(sample.time);
+            if (send_time > framework::timer::Time::now()) {
+                sleep();
+            }
         }
 
         void TaskBase::sleep() const
@@ -75,7 +83,7 @@ namespace ppbox
             response_t const & resp, 
             boost::system::error_code const & ec) const
         {
-            io_svc_.post(boost::bind(resp, ec));
+            config_.io_svc.post(boost::bind(resp, ec));
         }
 
     } // namespace dispatch

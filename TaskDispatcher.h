@@ -1,16 +1,17 @@
-// Dispatcher.h
+// TaskDispatcher.h
 
-#ifndef _PPBOX_DISPATCH_DISPATCHER_H_
-#define _PPBOX_DISPATCH_DISPATCHER_H_
+#ifndef _PPBOX_DISPATCH_TASK_DISPATCHER_H_
+#define _PPBOX_DISPATCH_TASK_DISPATCHER_H_
 
 #include "ppbox/dispatch/DispatcherBase.h"
+#include "ppbox/dispatch/TaskConfig.h"
 #include "ppbox/dispatch/SinkGroup.h"
 
 #include <ppbox/common/Call.h>
 #include <ppbox/common/Create.h>
 
 #define PPBOX_REGISTER_DISPATCHER(p, c) \
-    static ppbox::common::Call reg_ ## c(ppbox::dispatch::Dispatcher::register_dispatcher, p, ppbox::common::Creator<c>())
+    static ppbox::common::Call reg_ ## c(ppbox::dispatch::TaskDispatcher::register_dispatcher, p, ppbox::common::Creator<c>())
 
 namespace ppbox
 {
@@ -19,10 +20,10 @@ namespace ppbox
 
         struct Request;
 
-        class Dispatcher
+        class TaskDispatcher
             : public DispatcherBase
         {
-            typedef boost::function<Dispatcher * (
+            typedef boost::function<TaskDispatcher * (
                 boost::asio::io_service &, 
                 boost::asio::io_service &)
             > register_type;
@@ -32,20 +33,20 @@ namespace ppbox
                 size_t priority, 
                 register_type func);
 
-            static Dispatcher * create(
+            static TaskDispatcher * create(
                 boost::asio::io_service & io_svc, 
                 boost::asio::io_service & dispatch_io_svc, 
                 framework::string::Url const & url);
 
             static void destory(
-                Dispatcher* & dispatcher);
+                TaskDispatcher* & dispatcher);
 
         public:
-            Dispatcher(
+            TaskDispatcher(
                 boost::asio::io_service & io_svc, 
                 boost::asio::io_service & dispatch_io_svc);
 
-            virtual ~Dispatcher();
+            virtual ~TaskDispatcher();
 
         public:
             virtual void async_open(
@@ -62,6 +63,12 @@ namespace ppbox
                 response_t const & seek_resp,
                 response_t const & resp);
 
+            virtual bool pause(
+                boost::system::error_code & ec);
+
+            virtual bool resume(
+                boost::system::error_code & ec);
+
             virtual bool cancel(
                 boost::system::error_code & ec);
 
@@ -74,7 +81,7 @@ namespace ppbox
 
             virtual bool assign(
                 framework::string::Url const & url, 
-                boost::system::error_code & ec) = 0;
+                boost::system::error_code & ec);
 
             virtual void async_buffer(
                 response_t const & resp);
@@ -90,6 +97,11 @@ namespace ppbox
             boost::asio::io_service & dispatch_io_svc()
             {
                 return dispatch_io_svc_;
+            }
+
+            TaskConfig & config()
+            {
+                return config_;
             }
 
             SinkGroup & sink_group()
@@ -112,16 +124,26 @@ namespace ppbox
             virtual void start_buffer() = 0;
 
             virtual void cancel_open(
-                boost::system::error_code & ec) = 0;
+                boost::system::error_code & ec);
 
             virtual void cancel_play(
-                boost::system::error_code & ec) = 0;
+                boost::system::error_code & ec);
 
             virtual void cancel_buffer(
-                boost::system::error_code & ec) = 0;
+                boost::system::error_code & ec);
 
             virtual void do_close(
                 boost::system::error_code & ec) = 0;
+
+        private:
+            void task_cancel(
+                boost::system::error_code & ec);
+
+            void task_pause(
+                boost::system::error_code & ec);
+
+            void task_resume(
+                boost::system::error_code & ec);
 
         private:
             static std::multimap<size_t, register_type> & dispatcher_map();
@@ -137,6 +159,7 @@ namespace ppbox
 
         private:
             boost::asio::io_service & dispatch_io_svc_;
+            TaskConfig config_;
             AsyncTypeEnum async_type_;
             response_t resp_;
             SinkGroup sink_group_;
@@ -145,4 +168,4 @@ namespace ppbox
     } // namespace dispatch
 } // namespace ppbox
 
-#endif // _PPBOX_DISPATCH_DISPATCHER_H_
+#endif // _PPBOX_DISPATCH_TASK_DISPATCHER_H_

@@ -1,8 +1,9 @@
-// Dispatcher.h
+// TaskDispatcher.h
 
 #include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/Dispatcher.h"
+#include "ppbox/dispatch/TaskDispatcher.h"
 #include "ppbox/dispatch/mux/MuxDispatcher.h"
+#include "ppbox/dispatch/merge/MergeDispatcher.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -14,29 +15,29 @@ namespace ppbox
     namespace dispatch
     {
 
-        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.Dispatcher", framework::logger::Debug);
+        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.TaskDispatcher", framework::logger::Debug);
 
-        std::multimap<size_t, Dispatcher::register_type> & Dispatcher::dispatcher_map()
+        std::multimap<size_t, TaskDispatcher::register_type> & TaskDispatcher::dispatcher_map()
         {
             static std::multimap<size_t, register_type> g_map;
             return g_map;
         }
 
-        void Dispatcher::register_dispatcher(
+        void TaskDispatcher::register_dispatcher(
             size_t priority, 
             register_type func)
         {
             dispatcher_map().insert(std::make_pair(priority, func));
         }
 
-        Dispatcher * Dispatcher::create(
+        TaskDispatcher * TaskDispatcher::create(
             boost::asio::io_service & io_svc, 
             boost::asio::io_service & dispatch_io_svc, 
             framework::string::Url const & url)
         {
             std::multimap<size_t, register_type>::const_iterator iter = dispatcher_map().begin();
             for (; iter != dispatcher_map().end(); ++iter) {
-                Dispatcher * dispatcher = iter->second(io_svc, dispatch_io_svc);
+                TaskDispatcher * dispatcher = iter->second(io_svc, dispatch_io_svc);
                 if (dispatcher->accept(url))
                     return dispatcher;
                 delete dispatcher;
@@ -44,27 +45,28 @@ namespace ppbox
             return NULL;
         }
 
-        void Dispatcher::destory(
-            Dispatcher* & dispatcher)
+        void TaskDispatcher::destory(
+            TaskDispatcher* & dispatcher)
         {
             delete dispatcher;
             dispatcher = NULL;
         }
 
-        Dispatcher::Dispatcher(
+        TaskDispatcher::TaskDispatcher(
             boost::asio::io_service & io_svc, 
             boost::asio::io_service & dispatch_io_svc)
             : DispatcherBase(io_svc)
             , dispatch_io_svc_(dispatch_io_svc)
+            , config_(io_svc)
             , async_type_(none)
         {
         }
 
-        Dispatcher::~Dispatcher()
+        TaskDispatcher::~TaskDispatcher()
         {
         }
 
-        void Dispatcher::async_open(
+        void TaskDispatcher::async_open(
             framework::string::Url const & url, 
             response_t const & resp)
         {
@@ -76,7 +78,7 @@ namespace ppbox
             start_open(url);
         }
 
-        bool Dispatcher::setup(
+        bool TaskDispatcher::setup(
             boost::uint32_t index, 
             util::stream::Sink & sink, 
             boost::system::error_code & ec)
@@ -90,7 +92,7 @@ namespace ppbox
             return !ec;
         }
 
-        bool Dispatcher::setup(
+        bool TaskDispatcher::setup(
             SinkGroup const & sink_group, 
             boost::system::error_code & ec)
         {
@@ -114,7 +116,7 @@ namespace ppbox
             return !ec;
         }
 
-        void Dispatcher::async_play(
+        void TaskDispatcher::async_play(
             SeekRange const & range, 
             response_t const & seek_resp, 
             response_t const & resp)
@@ -127,7 +129,32 @@ namespace ppbox
             start_play(range, seek_resp);
         }
 
-        void Dispatcher::async_buffer(
+        bool TaskDispatcher::pause(
+            boost::system::error_code & ec)
+        {
+            LOG_DEBUG("[pause]");
+            task_pause(ec);
+            return true;
+        }
+
+        bool TaskDispatcher::resume(
+            boost::system::error_code & ec)
+        {
+            LOG_DEBUG("[resume]");
+            task_resume(ec);
+            return true;
+        }
+
+        bool TaskDispatcher::assign(
+            framework::string::Url const & url, 
+            boost::system::error_code & ec)
+        {
+            config_.fast = url.param("dispatch.fast") == "true";
+            ec.clear();
+            return true;
+        }
+
+        void TaskDispatcher::async_buffer(
             response_t const & resp)
         {
             LOG_DEBUG("[async_buffer]");
@@ -138,7 +165,7 @@ namespace ppbox
             start_buffer();
         }
 
-        bool Dispatcher::cancel(
+        bool TaskDispatcher::cancel(
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[cancel]");
@@ -160,7 +187,49 @@ namespace ppbox
             return !ec;
         }
 
-        bool Dispatcher::close(
+        void TaskDispatcher::cancel_open(
+            boost::system::error_code & ec)
+        {
+            LOG_DEBUG("[cancel_open]");
+            task_cancel(ec);
+        }
+
+        void TaskDispatcher::cancel_play(
+            boost::system::error_code & ec)
+        {
+            LOG_DEBUG("[cancel_play]");
+            task_cancel(ec);
+        }
+
+        void TaskDispatcher::cancel_buffer(
+            boost::system::error_code & ec)
+        {
+            LOG_DEBUG("[cancel_buffer]");
+            task_cancel(ec);
+        }
+
+        void TaskDispatcher::task_cancel(
+            boost::system::error_code & ec)
+        {
+            config_.cancel = true;
+            ec.clear();
+        }
+
+        void TaskDispatcher::task_pause(
+            boost::system::error_code & ec)
+        {
+            config_.pause = true;
+            ec.clear();
+        }
+
+        void TaskDispatcher::task_resume(
+            boost::system::error_code & ec)
+        {
+            config_.pause = false;
+            ec.clear();
+        }
+
+        bool TaskDispatcher::close(
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[close]");
@@ -170,10 +239,12 @@ namespace ppbox
             return !(ec);
         }
 
-        void Dispatcher::response(
+        void TaskDispatcher::response(
             boost::system::error_code const & ec)
         {
             assert(async_type_ != none);
+            config_.cancel = false;
+            config_.pause = false;
             async_type_ = none;
             response_t resp;
             resp.swap(resp_);

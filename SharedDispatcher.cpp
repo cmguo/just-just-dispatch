@@ -76,7 +76,7 @@ namespace ppbox
         }
 
         bool SharedDispatcher::get_play_info(
-            ppbox::data::MediaInfo & info, 
+            ppbox::data::PlayInfo & info, 
             boost::system::error_code & ec)
         {
             return manager_.get_play_info(session_id_, info, ec);

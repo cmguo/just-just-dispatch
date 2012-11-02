@@ -3,7 +3,7 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/SingleDispatcher.h"
 #include "ppbox/dispatch/DispatchThread.h"
-#include "ppbox/dispatch/Dispatcher.h"
+#include "ppbox/dispatch/TaskDispatcher.h"
 #include "ppbox/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
@@ -42,10 +42,10 @@ namespace ppbox
             LOG_INFO("[async_open]");
 
             if (dispatcher_ == NULL) {
-                dispatcher_ = Dispatcher::create(io_svc(), thread_->io_svc(), url);
+                dispatcher_ = TaskDispatcher::create(io_svc(), thread_->io_svc(), url);
             } else if (!dispatcher_->accept(url)) {
                 delete dispatcher_;
-                dispatcher_ = Dispatcher::create(io_svc(), thread_->io_svc(), url);
+                dispatcher_ = TaskDispatcher::create(io_svc(), thread_->io_svc(), url);
             }
 
             if (dispatcher_ == NULL) {
@@ -98,7 +98,7 @@ namespace ppbox
         }
 
         bool SingleDispatcher::get_play_info(
-            ppbox::data::MediaInfo & info, 
+            ppbox::data::PlayInfo & info, 
             boost::system::error_code & ec)
         {
             return dispatcher_->get_play_info(info, ec);

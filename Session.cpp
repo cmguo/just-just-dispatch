@@ -3,15 +3,19 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/Session.h"
 
+#include <boost/bind.hpp>
+
 namespace ppbox
 {
     namespace dispatch
     {
 
         Session::Session(
+            boost::asio::io_service & io_svc, 
             framework::string::Url const & url, 
             response_t const & resp)
-            : url_(url)
+            : io_svc_(io_svc)
+            , url_(url)
             , resp_(resp)
         {
             static boost::uint32_t gid = 0;
@@ -31,11 +35,13 @@ namespace ppbox
             if (!resp_.empty()) {
                 response_t resp;
                 resp_.swap(resp);
-                resp(ec);
+                io_svc_.post(boost::bind(resp, ec));
             } else {
                 assert(!play_reqs_.empty());
-                play_reqs_.front().resp(ec);
+                response_t resp;
+                play_reqs_.front().resp.swap(resp);
                 play_reqs_.pop_front();
+                io_svc_.post(boost::bind(resp, ec));
             }
         }
 
@@ -72,14 +78,15 @@ namespace ppbox
             if (!resp_.empty()) {
                 response_t resp;
                 resp_.swap(resp);
-                resp(ec);
+                io_svc_.post(boost::bind(resp, ec));
             } else {
                 for (size_t i = 0; i < play_reqs_.size(); ++i) {
-                    play_reqs_[i].resp(ec);
+                    response_t resp;
+                    play_reqs_[i].resp.swap(resp);
+                    io_svc_.post(boost::bind(resp, ec));
                 }
                 play_reqs_.clear();
             }
-            id_ = 0;
         }
 
     } // namespace dispatch

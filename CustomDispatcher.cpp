@@ -68,7 +68,7 @@ namespace ppbox
         }
 
         bool CustomDispatcher::get_play_info(
-            ppbox::data::MediaInfo & info, 
+            ppbox::data::PlayInfo & info, 
             boost::system::error_code & ec)
         {
             return dispatcher_.get_play_info(info, ec);

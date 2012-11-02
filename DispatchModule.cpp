@@ -65,8 +65,10 @@ namespace ppbox
             std::vector<DispatcherBase *>::iterator iter = 
                 std::find(dispatchers_.begin(), dispatchers_.end(), dispatcher);
             assert(iter != dispatchers_.end());
-            dispatchers_.erase(iter);
-            delete dispatcher;
+            if (iter != dispatchers_.end()) {
+                dispatchers_.erase(iter);
+                delete dispatcher;
+            }
         }
 
         bool DispatchModule::normalize_url(
@@ -75,12 +77,12 @@ namespace ppbox
         {
             std::string::size_type pos = url.path().find('.');
             if (pos != std::string::npos) {
-                if (url.param("format").empty()) {
-                    url.param("format", url.path().substr(pos + 1));
+                if (url.param(param_format).empty()) {
+                    url.param(param_format, url.path().substr(pos + 1));
                 }
                 url.path(url.path().substr(0, pos));
             }
-            if (url.param("format").empty()) {
+            if (url.param(param_format).empty()) {
                 ec = framework::system::logic_error::invalid_argument;
             }
             return !ec;

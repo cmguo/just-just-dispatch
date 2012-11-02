@@ -5,7 +5,7 @@
 #include "ppbox/dispatch/Session.h"
 #include "ppbox/dispatch/SessionGroup.h"
 #include "ppbox/dispatch/DispatchThread.h"
-#include "ppbox/dispatch/Dispatcher.h"
+#include "ppbox/dispatch/TaskDispatcher.h"
 #include "ppbox/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
@@ -20,7 +20,9 @@ namespace ppbox
 
         FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.SessionManager", framework::logger::Debug);
 
-#define LOG_XXX(p) LOG_INFO("[" p "] sid: " << sid << " current:" << current_ << " next:" << next_);
+#define LOG_XXX(func) LOG_INFO("[" func "] sid: " << sid << " current:" << current_ << " next:" << next_);
+
+#define LOG_XXX2(func, ec) LOG_INFO("[" func "] sid: " << sid << " current:" << current_ << " next:" << next_ << " ec:" << ec.message());
 
         SessionManager::SessionManager(
             boost::asio::io_service & io_svc)
@@ -63,8 +65,8 @@ namespace ppbox
 
             SessionGroup * m = next_;
             if (m == NULL || !m->accept(url)) {
-                Dispatcher * dispatcher = 
-                    Dispatcher::create(io_svc_, thread_->io_svc(), url);
+                TaskDispatcher * dispatcher = 
+                    TaskDispatcher::create(io_svc_, thread_->io_svc(), url);
                 if (dispatcher) {
                     m = new SessionGroup(url, *dispatcher);
                 } else {
@@ -73,9 +75,11 @@ namespace ppbox
                 }
             }
 
-            Session * s = new Session(url, resp);
+            Session * s = new Session(io_svc_, url, resp);
             sid = s->id();
             m->queue_session(s);
+
+            cancel_timer();
 
             if (m == next_) {
                 return;
@@ -115,8 +119,11 @@ namespace ppbox
             if (ses) {
                 // setup 不会立即更新到 Dispatcher
                 ses->sink_group().setup(index, sink);
+                if (ses == session_) {
+                    current_->dispatcher().setup(index, sink, ec);
+                }
             }
-            return ses != NULL;;
+            return !ec;
         }
 
         void SessionManager::async_play(
@@ -198,7 +205,7 @@ namespace ppbox
 
         bool SessionManager::get_play_info(
             boost::uint32_t sid, 
-            ppbox::data::MediaInfo & info, 
+            ppbox::data::PlayInfo & info, 
             boost::system::error_code & ec)
         {
             Session * ses = user_session(sid, ec);
@@ -218,11 +225,10 @@ namespace ppbox
             if (ses != NULL) {
                 bool need_cancel = current_->close_session(ses);
                 if (need_cancel) {
-                    if (current_->busy()) {
-                        current_->dispatcher().cancel(ec);
-                    } else {
-                        start_timer();
-                    }
+                    current_->dispatcher().cancel(ec);
+                }
+                if (current_->empty()) {
+                    start_timer();
                 }
             } else if (next_ != current_) {
                 ses = next_->find_session(sid);
@@ -262,7 +268,7 @@ namespace ppbox
             boost::system::error_code const & ec)
         {
             boost::uint32_t sid = session_ ? session_->id() : 0;
-            LOG_XXX("handle_request");
+            LOG_XXX2("handle_request", ec);
 
             assert(current_);
             // 先处理好内部状态，再调用回调
@@ -279,31 +285,37 @@ namespace ppbox
                 delete current;
             }
 
-            next_request();
+            if (timer_lanched_) {
+                boost::system::error_code ec;
+                handle_timer(timer_id_, ec);
+            }
+
+            if (current_) { // handle_timer有可能删除了current_
+                if (current_->empty()) { // 在应答中，可能删除了延迟删除的会话
+                    start_timer();
+                }
+                next_request();
+            }
         }
 
         void SessionManager::next_request()
         {
+            boost::uint32_t sid = session_ ? session_->id() : 0;
+            LOG_XXX("next_request");
+
             assert(current_);
             assert(current_ == next_);
             Request * req = current_->request();
             if (req == NULL) {
-                if (timer_lanched_) {
-                    boost::system::error_code ec;
-                    handle_timer(timer_id_, ec);
-                }
                 return;
             }
-            cancel_timer();
             if (req == SessionGroup::open_request) {
-                session_ = NULL;
+                session_ = current_->first();
                 current_->dispatcher().async_open(current_->url(), 
                     boost::bind(&SessionManager::handle_request, this, _1));
             } else if (req == SessionGroup::buffer_request) {
-                session_ = NULL;
                 current_->dispatcher().async_buffer(
                     boost::bind(&SessionManager::handle_request, this, _1));
-                start_timer();
             } else if (req == SessionGroup::delete_request) {
                 session_ = NULL;
                 boost::system::error_code ec;
@@ -329,9 +341,10 @@ namespace ppbox
 
         void SessionManager::start_timer()
         {
+            ++timer_id_;
+            LOG_INFO("[start_timer] timer_id:" << timer_id_);
             timer_.expires_from_now(
                 framework::timer::Duration::seconds(5));
-            ++timer_id_;
             timer_lanched_ = false;
             timer_.async_wait(
                 boost::bind(&SessionManager::handle_timer, this, timer_id_, _1));
@@ -339,16 +352,19 @@ namespace ppbox
 
         void SessionManager::cancel_timer()
         {
+            LOG_INFO("[start_timer] timer_id:" << timer_id_);
             ++timer_id_;
             timer_lanched_ = false;
             timer_.cancel();
         }
 
         void SessionManager::handle_timer(
-            boost::uint32_t time_id, 
+            boost::uint32_t timer_id, 
             boost::system::error_code const & ec)
         {
-            if (time_id != timer_id_)
+            LOG_INFO("[handle_timer] timer_id:" << timer_id << "/" << timer_id_);
+
+            if (timer_id != timer_id_)
                 return;
             timer_lanched_ = true;
             if (current_ && current_->empty()) {

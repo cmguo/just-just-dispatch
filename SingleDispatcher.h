@@ -10,7 +10,7 @@ namespace ppbox
     namespace dispatch
     {
 
-        class Dispatcher;
+        class TaskDispatcher;
         class DispatchThread;
 
         class SingleDispatcher
@@ -54,12 +54,12 @@ namespace ppbox
                 boost::system::error_code & ec);
 
             virtual bool get_play_info(
-                ppbox::data::MediaInfo & info, 
+                ppbox::data::PlayInfo & info, 
                 boost::system::error_code & ec);
 
         private:
             DispatchThread * thread_;
-            Dispatcher * dispatcher_;
+            TaskDispatcher * dispatcher_;
         };
 
     } // namespace dispatch

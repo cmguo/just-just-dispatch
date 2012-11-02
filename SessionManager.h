@@ -17,7 +17,7 @@ namespace ppbox
         class Session;
         class SessionGroup;
         class DispatchThread;
-        class Dispatcher;
+        class TaskDispatcher;
 
         class SessionManager
         {
@@ -78,7 +78,7 @@ namespace ppbox
 
             bool get_play_info(
                 boost::uint32_t sid,        // »á»°ID
-                ppbox::data::MediaInfo & info, 
+                ppbox::data::PlayInfo & info, 
                 boost::system::error_code & ec);
 
         public:

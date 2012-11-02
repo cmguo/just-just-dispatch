@@ -13,7 +13,7 @@ namespace ppbox
         class Session;
         struct Request;
 
-        class Dispatcher;
+        class TaskDispatcher;
 
         class SessionGroup
         {
@@ -29,7 +29,7 @@ namespace ppbox
         public:
             SessionGroup(
                 framework::string::Url const & url, 
-                Dispatcher & dispatcher);
+                TaskDispatcher & dispatcher);
 
         public:
             Request * request();
@@ -41,7 +41,7 @@ namespace ppbox
                 boost::system::error_code const & ec);
 
         public:
-            Dispatcher & dispatcher() const
+            TaskDispatcher & dispatcher() const
             {
                 return dispatcher_;
             }
@@ -67,6 +67,11 @@ namespace ppbox
             bool empty() const
             {
                 return sessions_.empty();
+            }
+
+            Session * first() const
+            {
+                return first_;
             }
 
             Session * current() const
@@ -97,7 +102,6 @@ namespace ppbox
             /* 
                 下列情形返回值为true
                 1、当前会话被关闭
-                2、会话队列变为空
              */
             bool close_session(
                 Session * ses);
@@ -115,11 +119,12 @@ namespace ppbox
 
         private:
             framework::string::Url url_;
-            Dispatcher & dispatcher_;
+            TaskDispatcher & dispatcher_;
 
         private:
             StatusEnum status_;
             std::vector<Session *> sessions_;
+            Session * first_;
             Session * current_;
             Session * next_;
         };

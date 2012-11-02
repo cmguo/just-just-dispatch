@@ -18,6 +18,7 @@ namespace ppbox
         {
         public:
             Session(
+                boost::asio::io_service & io_svc, 
                 framework::string::Url const & url, 
                 response_t const & resp);
 
@@ -34,6 +35,25 @@ namespace ppbox
 
             void close(
                 boost::system::error_code const & ec);
+
+        public:
+            struct FindById
+            {
+                FindById(
+                    size_t id)
+                    : id_(id)
+                {
+                }
+
+                bool operator()(
+                    Session * s)
+                {
+                    return s->id() == id_;
+                }
+
+            private:
+                size_t id_;
+            };
 
         public:
             // 每个会话都有一个id，id为0表示外面已经close
@@ -72,6 +92,7 @@ namespace ppbox
 
         private:
             boost::uint32_t id_; 
+            boost::asio::io_service & io_svc_;
             framework::string::Url url_;
             response_t resp_;  //async_open 回调 
             SinkGroup sink_group_;

@@ -3,7 +3,7 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/SessionGroup.h"
 #include "ppbox/dispatch/Session.h"
-#include "ppbox/dispatch/Dispatcher.h"
+#include "ppbox/dispatch/TaskDispatcher.h"
 #include "ppbox/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
@@ -34,10 +34,11 @@ namespace ppbox
 
         SessionGroup::SessionGroup(
             framework::string::Url const & url, 
-            Dispatcher & dispatcher)
+            TaskDispatcher & dispatcher)
             : url_(url)
             , dispatcher_(dispatcher)
             , status_(waiting)
+            , first_(NULL)
             , current_(NULL)
             , next_(NULL)
         {
@@ -63,10 +64,10 @@ namespace ppbox
             } else {
                 Request * req = current_->request();
                 if (req == NULL) {
-                    current_ = next_ = NULL;
-                } else {
-                    status_ = working;
+                    current_ = next_ = buffer_session;
+                    req = buffer_request;
                 }
+                status_ = working;
                 return req;
             }
         }
@@ -150,7 +151,7 @@ namespace ppbox
         bool SessionGroup::accept(
             framework::string::Url const & url)
         {
-            return url_.param("playlink") == url.param("playlink") 
+            return url_.param(param_playlink) == url.param(param_playlink) 
                 && dispatcher_.accept(url);
         }
 
@@ -160,6 +161,9 @@ namespace ppbox
             LOG_XXX("queue_session");
 
             sessions_.push_back(ses);
+            if (first_ == NULL) {
+                first_ = ses;
+            }
             if (ready()) {
                 boost::system::error_code ec;
                 ses->response(ec);
@@ -202,17 +206,21 @@ namespace ppbox
             std::vector<Session *>::iterator iter = 
                 std::find(sessions_.begin(), sessions_.end(), ses);
             assert(iter != sessions_.end());
-            bool need_next = (ses != NULL);
+            bool need_next = false;
             if (ses == current_) {
+                assert(busy());
                 ses->mark_close();
+                need_next = true;
             } else {
                 if (ses == next_) {
                     next_ = current_;
                 }
                 sessions_.erase(iter);
-                need_next = sessions_.empty();
                 ses->close(boost::asio::error::operation_aborted);
                 delete ses;
+            }
+            if (first_ == ses) {
+                first_ = buffer_session;
             }
             return need_next;
         }
@@ -220,26 +228,8 @@ namespace ppbox
         Session * SessionGroup::find_session(
             size_t id) const
         {
-            struct FindSessionById
-            {
-                FindSessionById(
-                    size_t id)
-                    : id_(id)
-                {
-                }
-
-                bool operator()(
-                    Session * s)
-                {
-                    return s->id() == id_;
-                }
-
-            private:
-                size_t id_;
-            };
-
             std::vector<Session *>::const_iterator iter = 
-                std::find_if(sessions_.begin(), sessions_.end(), FindSessionById(id));
+                std::find_if(sessions_.begin(), sessions_.end(), Session::FindById(id));
             return iter == sessions_.end() ? NULL : *iter;
         }
 
