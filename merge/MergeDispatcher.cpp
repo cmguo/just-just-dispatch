@@ -160,7 +160,8 @@ namespace ppbox
         bool MergeDispatcher::accept(
             framework::string::Url const & url)
         {
-            return true;
+            // TO BE FIX
+            return url.param(param_format) == "mp4";
         }
 
         bool MergeDispatcher::assign(
