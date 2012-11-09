@@ -175,6 +175,7 @@ namespace ppbox
                 if (next_ != current_) {
                     next_->close(error::session_kick_out);
                     kick_outs_.push_back(next_);
+                    next_ = ses;
                 } else {
                     if (status_ == bufferring) {
                         if (current_ != NULL) {
@@ -182,10 +183,17 @@ namespace ppbox
                             kick_outs_.push_back(current_);
                             current_ = NULL;
                         }
-                        current_ = ses;
+                        current_ = next_ = ses;
+                    } else {
+                        next_ = ses;
                     }
                 }
-                next_ = ses;
+                if (canceled_) {
+                    return false;
+                } else {
+                    canceled_ = true;
+                    return true;
+                }
             } else {
                 assert(next_ == current_);
                 if (first_ == NULL) {
@@ -198,12 +206,7 @@ namespace ppbox
                     kick_outs_.push_back(next_);
                 }
                 current_ = next_ = ses;
-            }
-            if (canceled_) {
-                return false;
-            } else {
-                canceled_ = (current_ != ses);
-                return canceled_;
+                return status_ == openned;
             }
         }
 

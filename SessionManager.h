@@ -88,6 +88,14 @@ namespace ppbox
             }
 
         private:
+            SessionGroup * create_group_with_session(
+                boost::uint32_t&  sid,      // »á»°ID
+                framework::string::Url const & playlink, 
+                response_t const & resp);
+
+            void delete_group(
+                SessionGroup * group);
+
             void handle_request(
                 boost::system::error_code const & ec);
 
