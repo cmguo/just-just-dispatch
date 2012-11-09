@@ -37,9 +37,9 @@ namespace ppbox
                 boost::system::error_code const & ec);
 
         public:
-            struct FindById
+            struct find_by_id
             {
-                FindById(
+                find_by_id(
                     size_t id)
                     : id_(id)
                 {

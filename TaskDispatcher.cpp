@@ -149,6 +149,7 @@ namespace ppbox
             framework::string::Url const & url, 
             boost::system::error_code & ec)
         {
+            LOG_DEBUG("[assign]");
             config_.fast = url.param("dispatch.fast") == "true";
             ec.clear();
             return true;

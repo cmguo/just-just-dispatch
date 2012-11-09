@@ -77,18 +77,18 @@ namespace ppbox
 
             Session * s = new Session(io_svc_, url, resp);
             sid = s->id();
-            m->queue_session(s);
+            bool need_next = m->queue_session(s);
 
             cancel_timer();
 
-            if (m == next_) {
+            if (m == next_ && !need_next) {
                 return;
             }
 
             if (current_ == NULL) {
                 current_ = next_ = m;
                 next_request();
-            } else if (!next_->busy()) {
+            } else if (!next_->busy()) { // next_ != current_ || !current_->busy() => !need_next => m != next
                 boost::system::error_code ec;
                 next_->dispatcher().close(ec);
                 delete &next_->dispatcher();
@@ -100,7 +100,7 @@ namespace ppbox
                 } else {
                     next_ = m;
                 }
-            } else {
+            } else { // current_ == next_ && current_->busy() && (m != current || need_next)
                 assert(current_ == next_);
                 boost::system::error_code ec;
                 current_->dispatcher().cancel(ec);
@@ -117,11 +117,8 @@ namespace ppbox
 
             Session * ses = user_session(sid, ec);
             if (ses) {
-                // setup 不会立即更新到 Dispatcher
-                ses->sink_group().setup(index, sink);
-                if (ses == session_) {
-                    current_->dispatcher().setup(index, sink, ec);
-                }
+                //ses->sink_group().setup(index, sink);
+                current_->dispatcher().setup(index, sink, ec);
             }
             return !ec;
         }
@@ -196,6 +193,8 @@ namespace ppbox
             ppbox::data::MediaInfo & info, 
             boost::system::error_code & ec)
         {
+            LOG_XXX("get_media_info");
+
             Session * ses = user_session(sid, ec);
             if (ses) {
                 return current_->dispatcher().get_media_info(info, ec);
@@ -208,6 +207,8 @@ namespace ppbox
             ppbox::data::PlayInfo & info, 
             boost::system::error_code & ec)
         {
+            LOG_XXX("get_play_info");
+
             Session * ses = user_session(sid, ec);
             if (ses) {
                 return current_->dispatcher().get_play_info(info, ec);
@@ -254,9 +255,9 @@ namespace ppbox
                 } else {
                     ec = error::session_not_found;
                 }
-            } else if (next_ != current_) {
+            } else if (next_ != current_ || ses != current_->next()) {
                 ses = NULL;
-                ec = error::status_refuse;
+                ec = error::session_kick_out;
             } else if (!ses->opened()) {
                 ec = error::session_not_open;
                 ses = NULL;
@@ -276,6 +277,7 @@ namespace ppbox
             if (next_ != current_) {
                 current_ = next_;
             }
+            // 调用回调
             current->response(ec);
             if (current != current_) {
                 current->close(error::session_kick_out);
@@ -305,6 +307,7 @@ namespace ppbox
 
             assert(current_);
             assert(current_ == next_);
+
             Request * req = current_->request();
             if (req == NULL) {
                 return;
@@ -313,6 +316,12 @@ namespace ppbox
                 session_ = current_->first();
                 current_->dispatcher().async_open(current_->url(), 
                     boost::bind(&SessionManager::handle_request, this, _1));
+            } else if (req == SessionGroup::switch_request) {
+                boost::system::error_code ec;
+                session_ = current_->current();
+                current_->dispatcher().assign(session_->url(), ec);
+                io_svc().post(
+                    boost::bind(&SessionManager::handle_request, this, ec));
             } else if (req == SessionGroup::buffer_request) {
                 current_->dispatcher().async_buffer(
                     boost::bind(&SessionManager::handle_request, this, _1));
@@ -324,16 +333,16 @@ namespace ppbox
                 delete current_;
                 current_ = next_ = NULL;
             } else {
-                if (req->session != session_) {
-                    session_ = req->session;
-                    boost::system::error_code ec;
-                    if (!current_->dispatcher().assign(session_->url(), ec) || 
-                        !current_->dispatcher().setup(session_->sink_group(), ec)) {
-                            io_svc().post(
-                                boost::bind(&SessionManager::handle_request, this, ec));
-                            return;
-                    }
-                }
+                //if (req->session != session_) {
+                //    session_ = req->session;
+                //    boost::system::error_code ec;
+                //    if (!current_->dispatcher().assign(session_->url(), ec) || 
+                //        !current_->dispatcher().setup(session_->sink_group(), ec)) {
+                //            io_svc().post(
+                //                boost::bind(&SessionManager::handle_request, this, ec));
+                //            return;
+                //    }
+                //}
                 current_->dispatcher().async_play(req->range, req->seek_resp, 
                     boost::bind(&SessionManager::handle_request, this, _1));
             }

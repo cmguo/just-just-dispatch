@@ -182,6 +182,8 @@ namespace ppbox
             }
             if (!ec) {
                 muxer_->reset(ec);
+                if (ec == boost::asio::error::would_block)
+                    ec.clear();
             }
             return !ec;
         }

@@ -21,16 +21,18 @@ namespace ppbox
             "openning", 
             "openned", 
             "working", 
+            "buffering", 
         };
 
 #define LOG_XXX(p) LOG_DEBUG("[" p "] status:" << status_str[status_] << " current:" << current_ << " next:" << next_);
 
         Request * SessionGroup::open_request = (Request *)0x01;
-        Request * SessionGroup::buffer_request = (Request *)0x02;
-        Request * SessionGroup::delete_request = (Request *)0x03;
+        Request * SessionGroup::switch_request = (Request *)0x02;
+        Request * SessionGroup::buffer_request = (Request *)0x03;
+        Request * SessionGroup::cancel_request = (Request *)0x04;
+        Request * SessionGroup::delete_request = (Request *)0x05;
 
-        Session * SessionGroup::buffer_session = (Session *)0x01;
-        Session * SessionGroup::delete_session = (Session *)0x02;
+        Session * SessionGroup::delete_session = (Session *)0x01;
 
         SessionGroup::SessionGroup(
             framework::string::Url const & url, 
@@ -41,6 +43,8 @@ namespace ppbox
             , first_(NULL)
             , current_(NULL)
             , next_(NULL)
+            , buffer_finish_(false)
+            , canceled_(false)
         {
         }
 
@@ -49,25 +53,32 @@ namespace ppbox
             LOG_XXX("request");
 
             assert(!busy());
+            canceled_ = false;
             assert(current_ == next_);
             if (status_ == waiting) {
                 status_ = openning;
                 return open_request;
             } else if (current_ == NULL) {
-                return NULL;
-            } else if (current_ == buffer_session) {
-                status_ = working;
-                return buffer_request;
+                if (!buffer_finish_) {
+                    status_ = bufferring;
+                    return buffer_request;
+                } else {
+                    return NULL;
+                }
             } else if (current_ == delete_session) {
                 status_ = waiting;
                 return delete_request;
             } else {
-                Request * req = current_->request();
+                Request * req = current_->opened() ? current_->request() : switch_request;
                 if (req == NULL) {
-                    current_ = next_ = buffer_session;
-                    req = buffer_request;
+                    if (!buffer_finish_) {
+                        status_ = bufferring;
+                        req = buffer_request;
+                    }
+                } else {
+                    buffer_finish_ = false;
+                    status_ = working;
                 }
-                status_ = working;
                 return req;
             }
         }
@@ -78,60 +89,53 @@ namespace ppbox
             LOG_XXX("response");
 
             assert(busy());
+            canceled_ = false;
             if (status_ == openning) {
                 // 先处理好内部状态，再调用回调
+                if (current_ && current_ == first_) {
+                    current_->response(ec);
+                }
                 if (ec) {
-                    current_ = next_ = delete_session;
-                } else {
-                    current_ = next_ = buffer_session;
+                    if (current_) {
+                        kick_outs_.push_back(current_);
+                    }
+                    first_ = current_ = next_ = delete_session;
                 }
                 status_ = openned;
-                for (size_t i = 0; i < sessions_.size(); ++i) {
-                    sessions_[i]->response(ec);
-                }
-            } else {
+            } else if (status_ == working) {
                 assert(current_);
                 assert(current_ != delete_session);
                 Session * current = current_;
-                // 先处理好内部状态，再调用回调
-                if (current_ != buffer_session) {
-                    //current_->response(ec);
-                    if (current_->closed()) {
-                        //current_->close(boost::asio::error::operation_aborted);
-                        std::vector<Session *>::iterator iter = 
-                            std::find(sessions_.begin(), sessions_.end(), current_);
-                        assert(iter != sessions_.end());
-                        sessions_.erase(iter);
-                        if (next_ == current_) {
-                            next_ = NULL;
-                        }
-                        //delete current_;
-                        current_ = NULL;
+                current_->response(ec);
+                if (current_->closed()) {
+                    current_->close(boost::asio::error::operation_aborted);
+                    delete current_;
+                    if (next_ == current_) {
+                        next_ = NULL;
                     }
+                    current_ = NULL;
                 }
                 if (next_ != current_) {
-                    //if (current_ != buffer_session && current_ != NULL) {
-                    //    current_->cancel(error::session_kick_out); // 回话不立即关闭，还可以接收新的请求
-                    //}
+                    if (current_ != NULL) {
+                        current_->cancel(error::session_kick_out);
+                        kick_outs_.push_back(current_);
+                    }
                     current_ = next_;
-                } else if (current_ == buffer_session) {
-                    current_ = next_ = NULL;
-                } else if (current_ == NULL) {
-                    current_ = next_ = buffer_session;
+                    boost::system::error_code ec1;
+                    current_->response(ec1);
                 }
                 status_ = openned;
-                // 调用延迟回调
-                if (current != buffer_session) {
-                    current->response(ec);
-                    if (current != current_) {
-                        if (current->closed()) {
-                            current->close(boost::asio::error::operation_aborted);
-                            delete current;
-                        } else {
-                            current->cancel(error::session_kick_out); // 回话不立即关闭，还可以接收新的请求
-                        }
+            } else { // status_ == bufferring
+                buffer_finish_ = true;
+                if (next_ != current_) {
+                    if (current_) {
+                        current_->cancel(error::session_kick_out);
+                        kick_outs_.push_back(current_);
                     }
+                    buffer_finish_ = false;
+                    current_ = next_;
                 }
+                status_ = openned;
             }
         }
 
@@ -141,11 +145,18 @@ namespace ppbox
             LOG_XXX("close");
 
             assert(!busy());
-            for (size_t i = 0; i < sessions_.size(); ++i) {
-                sessions_[i]->close(ec);
-                delete sessions_[i];
+            if (current_) {
+                kick_outs_.push_back(current_);
+            }
+            if (next_ != current_) {
+                kick_outs_.push_back(next_);
             }
             current_ = next_ = NULL;
+            for (size_t i = 0; i < kick_outs_.size(); ++i) {
+                kick_outs_[i]->close(ec);
+                delete kick_outs_[i];
+            }
+            kick_outs_.clear();
         }
 
         bool SessionGroup::accept(
@@ -155,47 +166,58 @@ namespace ppbox
                 && dispatcher_.accept(url);
         }
 
-        void SessionGroup::queue_session(
+        bool SessionGroup::queue_session(
             Session * ses)
         {
             LOG_XXX("queue_session");
 
-            sessions_.push_back(ses);
-            if (first_ == NULL) {
-                first_ = ses;
+            if (status_ == working || status_ == bufferring) {
+                if (next_ != current_) {
+                    next_->close(error::session_kick_out);
+                    kick_outs_.push_back(next_);
+                } else {
+                    if (status_ == bufferring) {
+                        if (current_ != NULL) {
+                            current_->cancel(error::session_kick_out);
+                            kick_outs_.push_back(current_);
+                            current_ = NULL;
+                        }
+                        current_ = ses;
+                    }
+                }
+                next_ = ses;
+            } else {
+                assert(next_ == current_);
+                if (first_ == NULL) {
+                    first_ = ses;
+                } else if (first_ == current_) {
+                    first_ = NULL;
+                }
+                if (next_) {
+                    next_->cancel(error::session_kick_out);
+                    kick_outs_.push_back(next_);
+                }
+                current_ = next_ = ses;
             }
-            if (ready()) {
-                boost::system::error_code ec;
-                ses->response(ec);
+            if (canceled_) {
+                return false;
+            } else {
+                canceled_ = (current_ != ses);
+                return canceled_;
             }
         }
 
         bool SessionGroup::active_session(
             Session * ses)
         {
-            LOG_XXX("active_session");
-
             assert(ready());
-            std::vector<Session *>::iterator iter = 
-                std::find(sessions_.begin(), sessions_.end(), ses);
-            assert(iter != sessions_.end());
-            (void)iter;
-            bool need_next = (current_ == next_);
-            if (current_ == NULL) {
-                current_ = next_ = ses;
-            } else if (next_ == current_) {
-                if (next_ != ses) {
-                    next_ = ses;
-                } else {
-                    need_next = false;
-                }
+            assert(ses == current_);
+            if (canceled_) {
+                return false;
             } else {
-                // 为简单起见：如果当前会话在取消中，即使该会话重新激活，也不能再踢其他会话
-                if (ses != current_ && ses != next_) {
-                    next_ = ses;
-                }
+                canceled_ = (status_ == bufferring);
+                return canceled_ || status_ == openned;
             }
-            return need_next;
         }
 
         bool SessionGroup::close_session(
@@ -203,34 +225,47 @@ namespace ppbox
         {
             LOG_XXX("close_session");
 
-            std::vector<Session *>::iterator iter = 
-                std::find(sessions_.begin(), sessions_.end(), ses);
-            assert(iter != sessions_.end());
             bool need_next = false;
             if (ses == current_) {
-                assert(busy());
-                ses->mark_close();
-                need_next = true;
-            } else {
-                if (ses == next_) {
-                    next_ = current_;
+                if (status_ == working) {
+                    ses->mark_close();
+                    need_next = true;
+                    if (canceled_) {
+                        return false;
+                    } else {
+                        canceled_ = true;
+                        return true;
+                    }
+                } else {
+                    assert(current_ == next_);
+                    current_ = next_ = NULL;
                 }
-                sessions_.erase(iter);
-                ses->close(boost::asio::error::operation_aborted);
-                delete ses;
+            } else if (ses == next_) {
+                next_ = current_;
+            } else {
+                std::vector<Session *>::iterator iter = std::find(
+                    kick_outs_.begin(), kick_outs_.end(), ses);
+                assert(iter != kick_outs_.end());
+                kick_outs_.erase(iter);
             }
+            ses->close(boost::asio::error::operation_aborted);
+            delete ses;
             if (first_ == ses) {
-                first_ = buffer_session;
+                first_ = NULL;
             }
-            return need_next;
+            return false;
         }
 
         Session * SessionGroup::find_session(
             size_t id) const
         {
+            if (current_ && current_->id() == id)
+                return current_;
+            if (next_ && next_->id() == id)
+                return next_;
             std::vector<Session *>::const_iterator iter = 
-                std::find_if(sessions_.begin(), sessions_.end(), Session::FindById(id));
-            return iter == sessions_.end() ? NULL : *iter;
+                std::find_if(kick_outs_.begin(), kick_outs_.end(), Session::find_by_id(id));
+            return iter == kick_outs_.end() ? NULL : *iter;
         }
 
     } // namespace dispatch
