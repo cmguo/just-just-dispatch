@@ -7,11 +7,7 @@
 #include "ppbox/dispatch/TaskConfig.h"
 #include "ppbox/dispatch/SinkGroup.h"
 
-#include <ppbox/common/Call.h>
-#include <ppbox/common/Create.h>
-
-#define PPBOX_REGISTER_DISPATCHER(p, c) \
-    static ppbox::common::Call reg_ ## c(ppbox::dispatch::TaskDispatcher::register_dispatcher, p, ppbox::common::Creator<c>())
+#include <ppbox/common/ClassFactory.h>
 
 namespace ppbox
 {
@@ -22,24 +18,19 @@ namespace ppbox
 
         class TaskDispatcher
             : public DispatcherBase
+            , public ppbox::common::ClassFactory<
+                TaskDispatcher, 
+                size_t, 
+                TaskDispatcher * (
+                    boost::asio::io_service &, 
+                    boost::asio::io_service &)
+            >
         {
-            typedef boost::function<TaskDispatcher * (
-                boost::asio::io_service &, 
-                boost::asio::io_service &)
-            > register_type;
-
         public:
-            static void register_dispatcher(
-                size_t priority, 
-                register_type func);
-
             static TaskDispatcher * create(
                 boost::asio::io_service & io_svc, 
                 boost::asio::io_service & dispatch_io_svc, 
                 framework::string::Url const & url);
-
-            static void destory(
-                TaskDispatcher* & dispatcher);
 
         public:
             TaskDispatcher(
@@ -146,9 +137,6 @@ namespace ppbox
                 boost::system::error_code & ec);
 
         private:
-            static std::multimap<size_t, register_type> & dispatcher_map();
-
-        private:
             enum AsyncTypeEnum
             {
                 none, 
@@ -167,5 +155,7 @@ namespace ppbox
 
     } // namespace dispatch
 } // namespace ppbox
+
+#define PPBOX_REGISTER_DISPATCHER(p, c) PPBOX_REGISTER_CLASS(p, c)
 
 #endif // _PPBOX_DISPATCH_TASK_DISPATCHER_H_

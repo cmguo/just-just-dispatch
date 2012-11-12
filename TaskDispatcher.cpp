@@ -17,39 +17,19 @@ namespace ppbox
 
         FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.TaskDispatcher", framework::logger::Debug);
 
-        std::multimap<size_t, TaskDispatcher::register_type> & TaskDispatcher::dispatcher_map()
-        {
-            static std::multimap<size_t, register_type> g_map;
-            return g_map;
-        }
-
-        void TaskDispatcher::register_dispatcher(
-            size_t priority, 
-            register_type func)
-        {
-            dispatcher_map().insert(std::make_pair(priority, func));
-        }
-
         TaskDispatcher * TaskDispatcher::create(
             boost::asio::io_service & io_svc, 
             boost::asio::io_service & dispatch_io_svc, 
             framework::string::Url const & url)
         {
-            std::multimap<size_t, register_type>::const_iterator iter = dispatcher_map().begin();
-            for (; iter != dispatcher_map().end(); ++iter) {
+            creator_map_type::const_iterator iter = creator_map().begin();
+            for (; iter != creator_map().end(); ++iter) {
                 TaskDispatcher * dispatcher = iter->second(io_svc, dispatch_io_svc);
                 if (dispatcher->accept(url))
                     return dispatcher;
                 delete dispatcher;
             }
             return NULL;
-        }
-
-        void TaskDispatcher::destory(
-            TaskDispatcher* & dispatcher)
-        {
-            delete dispatcher;
-            dispatcher = NULL;
         }
 
         TaskDispatcher::TaskDispatcher(
