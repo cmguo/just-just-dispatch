@@ -75,6 +75,12 @@ namespace ppbox
                 return muxer_->time_seek(beg, ec);
             }
 
+            boost::uint64_t check_seek(
+                boost::system::error_code & ec)
+            {
+                return demuxer_->get_cur_time(ec);
+            }
+
         private:
             ppbox::demux::SegmentDemuxer* demuxer_;
             ppbox::mux::MuxerBase * muxer_;

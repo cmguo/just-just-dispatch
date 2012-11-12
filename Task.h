@@ -47,6 +47,12 @@ namespace ppbox
                 return false;
             }
 
+            boost::uint64_t check_seek(
+                boost::system::error_code & ec)
+            {
+                return 0;
+            }
+
             bool read_sample(
                 ppbox::avformat::Sample & sample, 
                 boost::system::error_code & ec)
@@ -79,6 +85,9 @@ namespace ppbox
 
             void check_speed(
                 ppbox::avformat::Sample const & sample) const;
+
+            void reset_time(
+                boost::uint64_t time);
 
             void sleep() const;
 
@@ -179,6 +188,15 @@ namespace ppbox
                     task.time_seek(range_.beg, range_.end, ec);
                 }
 
+                range_.beg = task.check_seek(ec);
+                while (!config_.cancel && ec && task.read_continuable(ec)) {
+                    task.sleep();
+                    range_.beg = task.check_seek(ec);
+                }
+
+                if (config_.cancel)
+                    ec = boost::asio::error::operation_aborted;
+
                 if (seek_resp_) {
                     response(seek_resp_, ec);
                     seek_resp_.clear();
@@ -195,6 +213,8 @@ namespace ppbox
                     response(resp_, ec);
                     return;
                 }
+
+                reset_time(range_.beg);
 
                 while (!config_.cancel) {
                     if (config_.pause) {

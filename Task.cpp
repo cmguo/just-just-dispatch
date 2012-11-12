@@ -74,6 +74,12 @@ namespace ppbox
             }
         }
 
+        void TaskBase::reset_time(
+            boost::uint64_t time)
+        {
+            start_time_ = framework::timer::Time::now() - framework::timer::Duration::milliseconds(time);
+        }
+
         void TaskBase::sleep() const
         {
             boost::this_thread::sleep(boost::posix_time::milliseconds(100));
