@@ -145,7 +145,7 @@ namespace ppbox
             LOG_XXX("close");
 
             assert(!busy());
-            if (current_) {
+            if (current_ && current_ != delete_session) {
                 kick_outs_.push_back(current_);
             }
             if (next_ != current_) {

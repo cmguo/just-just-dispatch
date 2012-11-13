@@ -67,7 +67,9 @@ namespace ppbox
 
             if (current_ == NULL) {
                 current_ = next_ = create_group_with_session(sid, url, resp);
-                next_request();
+                if (current_) {
+                    next_request();
+                }
             } else if (next_ != current_) {
                 if (!next_->accept(url)) {
                     SessionGroup * group = create_group_with_session(sid, url, resp);
