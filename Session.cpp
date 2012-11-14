@@ -140,7 +140,6 @@ namespace ppbox
             assert(opened());
             assert(!closed());
             play_reqs_.push_back(r);
-            play_reqs_.back().session = this;
         }
 
         void Session::response_all(

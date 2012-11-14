@@ -118,8 +118,6 @@ namespace ppbox
                         kick_outs_.push_back(current_);
                     }
                     current_ = next_;
-                    boost::system::error_code ec1;
-                    current_->response(ec1);
                 }
                 status_ = openned;
             } else { // status_ == bufferring
@@ -185,7 +183,6 @@ namespace ppbox
                         next_ = ses;
                     }
                 }
-                return true;
             } else {
                 assert(next_ == current_);
                 if (first_ == NULL) {
@@ -198,8 +195,8 @@ namespace ppbox
                     kick_outs_.push_back(next_);
                 }
                 current_ = next_ = ses;
-                return status_ == openned;
             }
+            return status_ != openning;
         }
 
         bool SessionGroup::active_session(

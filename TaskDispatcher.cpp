@@ -56,6 +56,7 @@ namespace ppbox
             assert(async_type_ == none);
             async_type_ = open;
             resp_ = resp;
+            config_.fast = url.param("dispatch.fast") == "true";
             start_open(url);
         }
 

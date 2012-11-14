@@ -86,10 +86,9 @@ namespace ppbox
 
             if (main_ses) {
                 // 主会话已经存在，不需要做什么
-                if (main_ses != next_->next()) {
+                if (next_ == NULL || main_ses != next_->next()) {
                     ec = error::session_kick_out;
                 } else {
-                    main_ses->queue_sub(ses); // 里面会调用回调
                 }
             } else if (current_ == NULL) {
                 current_ = next_ = create_group(url, ec);
@@ -106,6 +105,11 @@ namespace ppbox
                 SessionGroup * group = create_group(url, ec);
                 if (group) {
                     if (current_->busy()) {
+                        if (!canceling_) {
+                            canceling_ = true;
+                            boost::system::error_code ec;
+                            current_->dispatcher().cancel(ec);
+                        }
                         next_ = group;
                     } else {
                         delete_group(current_);
@@ -116,30 +120,34 @@ namespace ppbox
             }
 
             if (!ec) {
-                ses = new Session(io_svc_, url, resp);
                 if (main_ses == NULL) {
                     if (session.empty()) {
-                        main_ses = ses;
+                        main_ses = ses = new Session(io_svc_, url, resp);
                     } else {
                         main_ses = new Session(io_svc_, url);
+                        ses = new Session(io_svc_, url, resp);
                         named_sessions_[session] = main_ses;
-                        main_ses->queue_sub(ses); // 里面会调用回调
+                        main_ses->queue_sub(ses);
                     }
-                }
 
-                bool need_next = next_->queue_session(main_ses);
-                if (current_ != next_ || need_next) {
-                    if (current_->busy()) {
-                        if (!canceling_) {
-                            canceling_ = true;
-                            boost::system::error_code ec;
-                            current_->dispatcher().cancel(ec);
+                    bool need_next = next_->queue_session(main_ses);
+                    if (current_ != next_ || need_next) {
+                        if (current_->busy()) {
+                            if (!canceling_) {
+                                canceling_ = true;
+                                boost::system::error_code ec;
+                                current_->dispatcher().cancel(ec);
+                            }
+                        } else {
+                            next_request();
                         }
-                    } else {
-                        next_request();
                     }
+                } else {
+                    ses = new Session(io_svc_, url, resp);
+                    main_ses->queue_sub(ses); // 里面会调用回调
                 }
                 sid = ses->id();
+                cancel_timer();
             } else {
                 io_svc_.post(boost::bind(resp, ec));
             }
@@ -148,11 +156,6 @@ namespace ppbox
                 named_sessions_.erase(session);
                 boost::system::error_code ec;
                 close(main_ses->id(), ec);
-            }
-
-            if (ses != NULL) {
-                sid = ses->id();
-                cancel_timer();
             }
         }
 
