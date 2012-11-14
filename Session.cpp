@@ -95,6 +95,13 @@ namespace ppbox
             id_ = 0;
         }
 
+        void Session::swap(
+            Session & ses)
+        {
+            std::swap(id_, ses.id_);
+            std::swap(resp_, ses.resp_);
+        }
+
         void Session::queue_sub(
             Session * ses)
         {
