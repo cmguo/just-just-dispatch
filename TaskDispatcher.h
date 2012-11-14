@@ -20,7 +20,7 @@ namespace ppbox
             : public DispatcherBase
             , public ppbox::common::ClassFactory<
                 TaskDispatcher, 
-                std::string, 
+                size_t, 
                 TaskDispatcher * (
                     boost::asio::io_service &, 
                     boost::asio::io_service &)
