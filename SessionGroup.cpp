@@ -242,19 +242,6 @@ namespace ppbox
             return false;
         }
 
-        void SessionGroup::replace(
-            Session * ses_from, 
-            Session * ses_to)
-        {
-            if (ses_from == current_) {
-                current_ = ses_to;
-            }
-            if (ses_from == next_) {
-                next_ = ses_to;
-            }
-            assert(ses_to == current_ || ses_to == next_);
-        }
-
         Session * SessionGroup::find_session(
             size_t id, 
             Session *& main_ses) const

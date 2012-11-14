@@ -82,47 +82,53 @@ namespace ppbox
                 }
             }
 
+            boost::system::error_code ec;
+
             if (main_ses) {
-                if (main_ses == next_->next()) {
-                    ses = new Session(io_svc_, url, resp);
-                    main_ses->queue_sub(ses); // 里面会调用回调
-                } else {
-                    io_svc_.post(boost::bind(resp, error::session_kick_out));
-                }
                 // 主会话已经存在，不需要做什么
-            } else if (current_ == NULL) {
-                current_ = next_ = create_group_with_session(url, ses, resp);
-                if (current_) {
-                    next_request();
+                if (main_ses != next_->next()) {
+                    ec = error::session_kick_out;
+                } else {
+                    main_ses->queue_sub(ses); // 里面会调用回调
                 }
+            } else if (current_ == NULL) {
+                current_ = next_ = create_group(url, ec);
             } else if (next_ != current_) {
                 if (!next_->accept(url)) {
-                    SessionGroup * group = create_group_with_session(url, ses, resp);
+                    SessionGroup * group = create_group(url, ec);
                     if (group) {
                         delete_group(next_);
                         next_ = group;
                     }
                 } else {
-                    Session * s = new Session(io_svc_, url, resp);
-                    sid = s->id();
-                    next_->queue_session(s);
                 }
             } else if (!next_->accept(url)) {
-                SessionGroup * group = create_group_with_session(url, ses, resp);
+                SessionGroup * group = create_group(url, ec);
                 if (group) {
                     if (current_->busy()) {
                         next_ = group;
                     } else {
                         delete_group(current_);
                         current_ = next_ = group;
-                        next_request();
                     }
                 }
             } else {
-                Session * s = new Session(io_svc_, url, resp);
-                sid = s->id();
-                bool need_next = current_->queue_session(s);
-                if (need_next) {
+            }
+
+            if (!ec) {
+                ses = new Session(io_svc_, url, resp);
+                if (main_ses == NULL) {
+                    if (session.empty()) {
+                        main_ses = ses;
+                    } else {
+                        main_ses = new Session(io_svc_, url);
+                        named_sessions_[session] = main_ses;
+                        main_ses->queue_sub(ses); // 里面会调用回调
+                    }
+                }
+
+                bool need_next = next_->queue_session(main_ses);
+                if (current_ != next_ || need_next) {
                     if (current_->busy()) {
                         if (!canceling_) {
                             canceling_ = true;
@@ -133,19 +139,15 @@ namespace ppbox
                         next_request();
                     }
                 }
+                sid = ses->id();
+            } else {
+                io_svc_.post(boost::bind(resp, ec));
             }
 
-            if (ses && !session.empty()) {
-                if (main_ses == NULL) {
-                    main_ses = new Session(io_svc_, url);
-                    next_->replace(ses, main_ses);
-                    main_ses->queue_sub(ses); // 里面会调用回调
-                }
-                if (to_close) {
-                    named_sessions_.erase(session);
-                    boost::system::error_code ec;
-                    close(main_ses->id(), ec);
-                }
+            if (to_close) {
+                named_sessions_.erase(session);
+                boost::system::error_code ec;
+                close(main_ses->id(), ec);
             }
 
             if (ses != NULL) {
@@ -323,20 +325,17 @@ namespace ppbox
             return true;
         }
 
-        SessionGroup * SessionManager::create_group_with_session(
+        SessionGroup * SessionManager::create_group(
             framework::string::Url const & url, 
-            Session *&  ses, 
-            response_t const & resp)
+            boost::system::error_code & ec)
         {
             TaskDispatcher * dispatcher = 
                 TaskDispatcher::create(io_svc_, thread_->io_svc(), url);
             if (dispatcher) {
                 SessionGroup * group = new SessionGroup(url, *dispatcher);
-                ses= new Session(io_svc_, url, resp);
-                group->queue_session(ses);
                 return group;
             } else {
-                io_svc_.post(boost::bind(resp, error::not_support));
+                ec = error::not_support;
                 return NULL;
             }
         }

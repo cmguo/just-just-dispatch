@@ -88,10 +88,9 @@ namespace ppbox
             }
 
         private:
-            SessionGroup * create_group_with_session(
+            SessionGroup * create_group(
                 framework::string::Url const & url, 
-                Session *&  ses, 
-                response_t const & resp);
+                boost::system::error_code & ec);
 
             void delete_group(
                 SessionGroup * group);

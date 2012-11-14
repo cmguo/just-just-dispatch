@@ -113,10 +113,6 @@ namespace ppbox
             bool close_session(
                 Session * ses);
 
-            void replace(
-                Session * ses_from, 
-                Session * ses_to);
-
             Session * find_session(
                 size_t id, 
                 Session *& main_ses) const;
