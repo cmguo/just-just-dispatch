@@ -102,7 +102,6 @@ namespace ppbox
             } else if (status_ == working) {
                 assert(current_);
                 assert(current_ != delete_session);
-                Session * current = current_;
                 current_->response(ec);
                 if (current_->closed()) {
                     current_->cancel(boost::asio::error::operation_aborted);

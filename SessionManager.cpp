@@ -291,7 +291,7 @@ namespace ppbox
             } else if (group == next_) {
                 next_->close_session(ses);
             } else {
-                std::vector<Session *>::const_iterator iter = 
+                std::vector<Session *>::iterator iter = 
                     std::find(kick_outs_.begin(), kick_outs_.end(), ses);
                 assert(iter != kick_outs_.end());
                 kick_outs_.erase(iter);

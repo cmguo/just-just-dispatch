@@ -88,7 +88,7 @@ namespace ppbox
         {
             LOG_DEBUG("[do_setup]");
             //muxer_->setup(index, ec);
-            assert(index == -1);
+            assert(index == (boost::uint32_t)-1);
             ec.clear();
         }
 
