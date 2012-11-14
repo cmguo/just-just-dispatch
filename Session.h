@@ -87,9 +87,6 @@ namespace ppbox
             }
 
         public:
-            void swap(
-                Session & ses);
-
             void queue_sub(
                 Session * ses);
 

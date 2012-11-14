@@ -83,6 +83,12 @@ namespace ppbox
             }
 
             if (main_ses) {
+                if (main_ses == next_->next()) {
+                    ses = new Session(io_svc_, url, resp);
+                    main_ses->queue_sub(ses); // 里面会调用回调
+                } else {
+                    io_svc_.post(boost::bind(resp, error::session_kick_out));
+                }
                 // 主会话已经存在，不需要做什么
             } else if (current_ == NULL) {
                 current_ = next_ = create_group_with_session(url, ses, resp);
@@ -131,17 +137,9 @@ namespace ppbox
 
             if (ses && !session.empty()) {
                 if (main_ses == NULL) {
-                    main_ses = ses;
-                    ses = new Session(io_svc_, url);
-                    main_ses->swap(*ses);
+                    main_ses = new Session(io_svc_, url);
+                    next_->replace(ses, main_ses);
                     main_ses->queue_sub(ses); // 里面会调用回调
-                } else if (main_ses == next_->next()) {
-                    assert(ses == NULL);
-                    ses = new Session(io_svc_, url, resp);
-                    main_ses->queue_sub(ses); // 里面会调用回调
-                } else {
-                    assert(ses == NULL);
-                    io_svc_.post(boost::bind(resp, error::session_kick_out));
                 }
                 if (to_close) {
                     named_sessions_.erase(session);
