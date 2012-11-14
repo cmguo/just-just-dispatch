@@ -39,7 +39,8 @@ namespace ppbox
                 boost::system::error_code const & ec);
 
             void close(
-                boost::system::error_code const & ec);
+                boost::system::error_code const & ec, 
+                std::vector<Session *> & orphans);
 
         public:
             TaskDispatcher & dispatcher() const
@@ -113,7 +114,8 @@ namespace ppbox
                 Session * ses);
 
             Session * find_session(
-                size_t id) const;
+                size_t id, 
+                Session *& main_session) const;
 
         public:
             static Request * open_request;
@@ -134,7 +136,6 @@ namespace ppbox
             Session * current_;
             Session * next_;
             bool buffer_finish_;
-            bool canceled_;
             std::vector<Session *> kick_outs_;
         };
 

@@ -72,12 +72,6 @@ namespace ppbox
             return dispatcher_->async_play(range, seek_resp, resp);
         }
 
-        bool SingleDispatcher::cancel(
-            boost::system::error_code & ec)
-        {
-            return dispatcher_->cancel(ec);
-        }
-
         bool SingleDispatcher::pause(
             boost::system::error_code & ec)
         {
@@ -102,6 +96,12 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             return dispatcher_->get_play_info(info, ec);
+        }
+
+        bool SingleDispatcher::cancel(
+            boost::system::error_code & ec)
+        {
+            return dispatcher_->cancel(ec);
         }
 
         bool SingleDispatcher::close(

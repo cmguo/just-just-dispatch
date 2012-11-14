@@ -22,6 +22,10 @@ namespace ppbox
                 framework::string::Url const & url, 
                 response_t const & resp);
 
+            Session(
+                boost::asio::io_service & io_svc, 
+                framework::string::Url const & url); // 虚拟会话
+
         public:
             Request * request();
 
@@ -34,7 +38,7 @@ namespace ppbox
             void mark_close();
 
             void close(
-                boost::system::error_code const & ec);
+                std::vector<Session *> & orphans);
 
         public:
             struct find_by_id
@@ -83,6 +87,21 @@ namespace ppbox
             }
 
         public:
+            void queue_sub(
+                Session * ses);
+
+            bool close_sub(
+                Session * ses);
+
+            Session * find_sub(
+                boost::uint32_t id);
+
+            Session * current_sub() const
+            {
+                return current_;
+            };
+
+        public:
             void queue_request(
                 Request const & r);
 
@@ -90,13 +109,26 @@ namespace ppbox
             void response_all(
                 boost::system::error_code const & ec);
 
+            void response_sub_open(
+                boost::system::error_code const & ec);
+
+            void cancel_sub_request(
+                Session * ses, 
+                boost::system::error_code const & ec);
+
+        public:
+            static Request * setup_request;
+
         private:
-            boost::uint32_t id_; 
+            boost::uint32_t id_;
             boost::asio::io_service & io_svc_;
             framework::string::Url url_;
             response_t resp_;  //async_open 回调 
             SinkGroup sink_group_;
             std::deque<Request> play_reqs_;
+            Session * current_;
+            bool playing_;
+            std::vector<Session *> sub_sessions_;
         };
 
     } // namespace dispatch

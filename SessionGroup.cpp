@@ -44,7 +44,6 @@ namespace ppbox
             , current_(NULL)
             , next_(NULL)
             , buffer_finish_(false)
-            , canceled_(false)
         {
         }
 
@@ -53,7 +52,6 @@ namespace ppbox
             LOG_XXX("request");
 
             assert(!busy());
-            canceled_ = false;
             assert(current_ == next_);
             if (status_ == waiting) {
                 status_ = openning;
@@ -89,7 +87,6 @@ namespace ppbox
             LOG_XXX("response");
 
             assert(busy());
-            canceled_ = false;
             if (status_ == openning) {
                 // 先处理好内部状态，再调用回调
                 if (current_ && current_ == first_) {
@@ -108,7 +105,8 @@ namespace ppbox
                 Session * current = current_;
                 current_->response(ec);
                 if (current_->closed()) {
-                    current_->close(boost::asio::error::operation_aborted);
+                    current_->cancel(boost::asio::error::operation_aborted);
+                    current_->close(kick_outs_);
                     delete current_;
                     if (next_ == current_) {
                         next_ = NULL;
@@ -140,22 +138,22 @@ namespace ppbox
         }
 
         void SessionGroup::close(
-            boost::system::error_code const & ec)
+            boost::system::error_code const & ec, 
+            std::vector<Session *> & orphans)
         {
             LOG_XXX("close");
 
             assert(!busy());
             if (current_ && current_ != delete_session) {
+                current_->cancel(ec);
                 kick_outs_.push_back(current_);
             }
             if (next_ != current_) {
+                next_->cancel(ec);
                 kick_outs_.push_back(next_);
             }
             current_ = next_ = NULL;
-            for (size_t i = 0; i < kick_outs_.size(); ++i) {
-                kick_outs_[i]->close(ec);
-                delete kick_outs_[i];
-            }
+            orphans.insert(orphans.end(), kick_outs_.begin(), kick_outs_.end());
             kick_outs_.clear();
         }
 
@@ -173,7 +171,7 @@ namespace ppbox
 
             if (status_ == working || status_ == bufferring) {
                 if (next_ != current_) {
-                    next_->close(error::session_kick_out);
+                    next_->cancel(error::session_kick_out);
                     kick_outs_.push_back(next_);
                     next_ = ses;
                 } else {
@@ -188,12 +186,7 @@ namespace ppbox
                         next_ = ses;
                     }
                 }
-                if (canceled_) {
-                    return false;
-                } else {
-                    canceled_ = true;
-                    return true;
-                }
+                return true;
             } else {
                 assert(next_ == current_);
                 if (first_ == NULL) {
@@ -215,12 +208,7 @@ namespace ppbox
         {
             assert(ready());
             assert(ses == current_);
-            if (canceled_) {
-                return false;
-            } else {
-                canceled_ = (status_ == bufferring);
-                return canceled_ || status_ == openned;
-            }
+            return status_ == bufferring || status_ == openned;
         }
 
         bool SessionGroup::close_session(
@@ -233,12 +221,7 @@ namespace ppbox
                 if (status_ == working) {
                     ses->mark_close();
                     need_next = true;
-                    if (canceled_) {
-                        return false;
-                    } else {
-                        canceled_ = true;
-                        return true;
-                    }
+                    return true;
                 } else {
                     assert(current_ == next_);
                     current_ = next_ = NULL;
@@ -251,7 +234,8 @@ namespace ppbox
                 assert(iter != kick_outs_.end());
                 kick_outs_.erase(iter);
             }
-            ses->close(boost::asio::error::operation_aborted);
+            ses->cancel(boost::asio::error::operation_aborted);
+            ses->close(kick_outs_);
             delete ses;
             if (first_ == ses) {
                 first_ = NULL;
@@ -260,15 +244,25 @@ namespace ppbox
         }
 
         Session * SessionGroup::find_session(
-            size_t id) const
+            size_t id, 
+            Session *& main_session) const
         {
-            if (current_ && current_->id() == id)
-                return current_;
-            if (next_ && next_->id() == id)
-                return next_;
-            std::vector<Session *>::const_iterator iter = 
-                std::find_if(kick_outs_.begin(), kick_outs_.end(), Session::find_by_id(id));
-            return iter == kick_outs_.end() ? NULL : *iter;
+            Session * ses = NULL;
+            if (current_ && ((ses = (current_->id() == id ? current_ : NULL)) || (ses = current_->find_sub(id)))) {
+                main_session = current_;
+                return ses;
+            }
+            if (next_ != current_ && ((ses = (next_->id() == id ? next_ : NULL)) || (ses = next_->find_sub(id)))) {
+                main_session = next_;
+                return ses;
+            }
+            for (size_t i = 0; i < kick_outs_.size(); ++i) {
+                if ((ses = (kick_outs_[i]->id() == id ? kick_outs_[i] : NULL)) || (ses = kick_outs_[i]->find_sub(id))) {
+                    main_session = kick_outs_[i];
+                    return ses;
+                }
+            }
+            return NULL;
         }
 
     } // namespace dispatch

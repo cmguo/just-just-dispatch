@@ -33,6 +33,7 @@ namespace ppbox
             , current_(NULL)
             , next_(NULL)
             , session_(NULL)
+            , canceling_(false)
         {
             thread_ = new DispatchThread;
         }
@@ -63,16 +64,33 @@ namespace ppbox
         {
             LOG_XXX("async_open");
 
-            cancel_timer();
+            Session * ses = NULL;
 
-            if (current_ == NULL) {
-                current_ = next_ = create_group_with_session(sid, url, resp);
+            std::string session = url.param(param_session);
+            bool to_close = false;
+            if (!session.empty()) {
+                if (session.compare(0, 5, "close") == 0) {
+                    to_close = true;
+                    session = session.substr(5);
+                }
+                std::map<std::string, Session *>::iterator iter = named_sessions_.find(session);
+                if (iter == named_sessions_.end()) {
+                    // 先通过下面创建主会话，再继续创建从会话
+                } else {
+                    ses = iter->second;
+                }
+            }
+
+            if (ses) {
+                // 主会话已经存在，不需要做什么
+            } else if (current_ == NULL) {
+                current_ = next_ = create_group_with_session(url, ses, resp);
                 if (current_) {
                     next_request();
                 }
             } else if (next_ != current_) {
                 if (!next_->accept(url)) {
-                    SessionGroup * group = create_group_with_session(sid, url, resp);
+                    SessionGroup * group = create_group_with_session(url, ses, resp);
                     if (group) {
                         delete_group(next_);
                         next_ = group;
@@ -83,7 +101,7 @@ namespace ppbox
                     next_->queue_session(s);
                 }
             } else if (!next_->accept(url)) {
-                SessionGroup * group = create_group_with_session(sid, url, resp);
+                SessionGroup * group = create_group_with_session(url, ses, resp);
                 if (group) {
                     if (current_->busy()) {
                         next_ = group;
@@ -99,12 +117,31 @@ namespace ppbox
                 bool need_next = current_->queue_session(s);
                 if (need_next) {
                     if (current_->busy()) {
-                        boost::system::error_code ec;
-                        current_->dispatcher().cancel(ec);
+                        if (!canceling_) {
+                            canceling_ = true;
+                            boost::system::error_code ec;
+                            current_->dispatcher().cancel(ec);
+                        }
                     } else {
                         next_request();
                     }
                 }
+            }
+
+            if (ses && !session.empty()) {
+                Session * s= new Session(io_svc_, url, resp);
+                ses->queue_sub(s); // 里面会调用回调
+                if (to_close) {
+                    named_sessions_.erase(session);
+                    boost::system::error_code ec;
+                    close(ses->id(), ec);
+                }
+                ses = s;
+            }
+
+            if (ses != NULL) {
+                sid = ses->id();
+                cancel_timer();
             }
         }
 
@@ -139,7 +176,10 @@ namespace ppbox
                 bool need_next = current_->active_session(ses);
                 if (need_next) {
                     if (current_->busy()) {
-                        current_->dispatcher().cancel(ec);
+                        if (!canceling_) {
+                            canceling_ = true;
+                            current_->dispatcher().cancel(ec);
+                        }
                     } else {
                         next_request();
                     }
@@ -148,19 +188,6 @@ namespace ppbox
                 io_svc_.post(boost::bind(seek_resp, ec));
                 io_svc_.post(boost::bind(resp, ec));
             }
-        }
-
-        bool SessionManager::cancel(
-            boost::uint32_t sid,        // 会话ID
-            boost::system::error_code & ec)
-        {
-            LOG_XXX("cancel");
-
-            Session * ses = user_session(sid, ec);
-            if (ses && ses == current_->current()) {
-                current_->dispatcher().cancel(ec);
-            }
-            return !ec;
         }
 
         bool SessionManager::pause(
@@ -217,46 +244,74 @@ namespace ppbox
             return false;
         }
 
+        bool SessionManager::cancel(
+            boost::uint32_t sid,        // 会话ID
+            boost::system::error_code & ec)
+        {
+            LOG_XXX("cancel");
+
+            Session * ses = user_session(sid, ec);
+            if (ses && ses == current_->current()) {
+                current_->dispatcher().cancel(ec);
+            }
+            return !ec;
+        }
+
         bool SessionManager::close(
             boost::uint32_t sid, 
             boost::system::error_code & ec)
         {
             LOG_XXX("close");
 
-            Session * ses = current_ ? current_->find_session(sid) : NULL;
-            if (ses != NULL) {
+            SessionGroup * group = NULL;
+            Session * main_session = NULL;
+            Session * ses = find_session(sid, group, main_session);
+            if (ses == NULL) {
+                return false;
+            }
+            if (ses != main_session) {
+                if (main_session->close_sub(ses)) {
+                    assert(group == current_);
+                    if (!canceling_) {
+                        canceling_ = true;
+                        current_->dispatcher().cancel(ec);
+                    }
+                }
+            } else if (group == current_) {
                 bool need_cancel = current_->close_session(ses);
                 if (need_cancel) {
-                    current_->dispatcher().cancel(ec);
+                    if (!canceling_) {
+                        canceling_ = true;
+                        current_->dispatcher().cancel(ec);
+                    }
                 }
                 if (current_->empty()) {
                     start_timer();
                 }
-            } else if (next_ != current_) {
-                ses = next_->find_session(sid);
-                if (ses) {
-                    next_->close_session(ses);
-                } else {
-                    ec = error::session_not_found;
-                }
+            } else if (group == next_) {
+                next_->close_session(ses);
             } else {
-                ec = error::session_not_found;
+                std::vector<Session *>::const_iterator iter = 
+                    std::find(kick_outs_.begin(), kick_outs_.end(), ses);
+                assert(iter != kick_outs_.end());
+                kick_outs_.erase(iter);
+                ses->close(kick_outs_);
+                delete ses;
             }
-            return ses != NULL;;
+            return true;
         }
 
         SessionGroup * SessionManager::create_group_with_session(
-            boost::uint32_t&  sid, 
             framework::string::Url const & url, 
+            Session *&  ses, 
             response_t const & resp)
         {
             TaskDispatcher * dispatcher = 
                 TaskDispatcher::create(io_svc_, thread_->io_svc(), url);
             if (dispatcher) {
                 SessionGroup * group = new SessionGroup(url, *dispatcher);
-                Session * s = new Session(io_svc_, url, resp);
-                sid = s->id();
-                group->queue_session(s);
+                ses= new Session(io_svc_, url, resp);
+                group->queue_session(ses);
                 return group;
             } else {
                 io_svc_.post(boost::bind(resp, error::not_support));
@@ -270,7 +325,7 @@ namespace ppbox
             boost::system::error_code ec;
             group->dispatcher().close(ec);
             delete &group->dispatcher();
-            group->close(error::session_kick_out);
+            group->close(error::session_kick_out, kick_outs_);
             delete group;
         }
 
@@ -278,19 +333,43 @@ namespace ppbox
             boost::uint32_t sid,        // 会话ID
             boost::system::error_code & ec)
         {
-            Session * ses = current_ ? current_->find_session(sid) : NULL;
+            SessionGroup * group = NULL;
+            Session * main_session = NULL;
+            Session * ses = find_session(sid, group, main_session);
             if (ses == NULL) {
-                if (next_ != current_ && next_->find_session(sid)) {
-                    ec = error::session_not_open;
-                } else {
-                    ec = error::session_not_found;
-                }
-            } else if (next_ != current_ || ses != current_->next()) {
+                ec = error::session_not_found;
+            } else if (group != next_ || main_session != next_->next()) {
                 ses = NULL;
                 ec = error::session_kick_out;
             } else if (!ses->opened()) {
-                ec = error::session_not_open;
                 ses = NULL;
+                ec = error::session_not_open;
+            } else {
+                ses = main_session;
+            }
+            return ses;
+        }
+
+        Session * SessionManager::find_session(
+            boost::uint32_t sid,        // 会话ID
+            SessionGroup *& group, 
+            Session *& main_session)
+        {
+            Session * ses = current_ ? current_->find_session(sid, main_session) : NULL;
+            if (ses) {
+                group = current_;
+            } else {
+                if (next_ != current_ && (ses = next_->find_session(sid, main_session))) {
+                    group = next_;
+                } else {
+                    for (size_t i = 0; i < kick_outs_.size(); ++i) {
+                        if ((ses = (kick_outs_[i]->id() == sid ? kick_outs_[i] : NULL)) || (ses = kick_outs_[i]->find_sub(sid))) {
+                            main_session = kick_outs_[i];
+                            group = (SessionGroup *)1; // deleted group
+                            return ses;
+                        }
+                    }
+                }
             }
             return ses;
         }
@@ -301,6 +380,8 @@ namespace ppbox
             boost::uint32_t sid = session_ ? session_->id() : 0;
             LOG_XXX2("handle_request", ec);
 
+            canceling_ = false;
+
             assert(current_);
             // 先处理好内部状态，再调用回调
             SessionGroup * current = current_;
@@ -310,11 +391,7 @@ namespace ppbox
             // 调用回调
             current->response(ec);
             if (current != current_) {
-                current->close(error::session_kick_out);
-                boost::system::error_code ec1;
-                current->dispatcher().close(ec1);
-                delete &current->dispatcher();
-                delete current;
+                delete_group(current);
             }
 
             if (timer_lanched_) {
@@ -350,6 +427,10 @@ namespace ppbox
                 boost::system::error_code ec;
                 session_ = current_->current();
                 current_->dispatcher().assign(session_->url(), ec);
+                handle_request(ec);
+            } else if (req == Session::setup_request) {
+                boost::system::error_code ec;
+                current_->dispatcher().setup(session_->current_sub()->sink_group(), ec);
                 handle_request(ec);
             } else if (req == SessionGroup::buffer_request) {
                 current_->dispatcher().async_buffer(
@@ -402,10 +483,13 @@ namespace ppbox
             if (timer_id != timer_id_)
                 return;
             timer_lanched_ = true;
-            if (current_ && current_->empty()) {
-                boost::system::error_code ec1;
+            if (current_ && current_ == next_ && current_->empty()) {
                 if (current_->busy()) {
-                    current_->dispatcher().cancel(ec1);
+                    if (!canceling_) {
+                        canceling_ = true;
+                        boost::system::error_code ec1;
+                        current_->dispatcher().cancel(ec1);
+                    }
                 } else {
                     delete_group(current_);
                     current_ = next_ = NULL;

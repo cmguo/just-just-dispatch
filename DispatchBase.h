@@ -1,4 +1,4 @@
-// DispatcherBase.h
+// DispatchBase.h
 
 #ifndef _PPBOX_DISPATCH_DISPATCH_BASE_H_
 #define _PPBOX_DISPATCH_DISPATCH_BASE_H_
@@ -20,8 +20,11 @@ namespace ppbox
         typedef boost::function<void (
             boost::system::error_code const &)> response_t;
 
+        class DispatcherBase;
+
         static char const * const param_playlink = "playlink";
         static char const * const param_format = "format";
+        static char const * const param_session = "session";
 
         struct SeekRange
         {

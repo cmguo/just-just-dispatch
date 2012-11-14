@@ -50,12 +50,6 @@ namespace ppbox
             return manager_.async_play(session_id_, range, seek_resp, resp);
         }
 
-        bool SharedDispatcher::cancel(
-            boost::system::error_code & ec)
-        {
-            return manager_.cancel(session_id_, ec);
-        }
-
         bool SharedDispatcher::pause(
             boost::system::error_code & ec)
         {
@@ -80,6 +74,12 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             return manager_.get_play_info(session_id_, info, ec);
+        }
+
+        bool SharedDispatcher::cancel(
+            boost::system::error_code & ec)
+        {
+            return manager_.cancel(session_id_, ec);
         }
 
         bool SharedDispatcher::close(

@@ -55,10 +55,6 @@ namespace ppbox
                 response_t const & seek_resp,
                 response_t const & resp);
 
-            bool cancel(
-                boost::uint32_t sid,        // 会话ID
-                boost::system::error_code & ec);
-
             bool pause(
                 boost::uint32_t sid,        // 会话ID
                 boost::system::error_code & ec);
@@ -67,10 +63,6 @@ namespace ppbox
                 boost::uint32_t sid,        // 会话ID
                 boost::system::error_code & ec);
 
-            bool close(
-                boost::uint32_t sid,        // 会话ID
-                boost::system::error_code & ec);
-            
             bool get_media_info(
                 boost::uint32_t sid,        // 会话ID
                 ppbox::data::MediaInfo & info, 
@@ -81,6 +73,14 @@ namespace ppbox
                 ppbox::data::PlayInfo & info, 
                 boost::system::error_code & ec);
 
+            bool cancel(
+                boost::uint32_t sid,        // 会话ID
+                boost::system::error_code & ec);
+
+            bool close(
+                boost::uint32_t sid,        // 会话ID
+                boost::system::error_code & ec);
+
         public:
             boost::asio::io_service & io_svc()
             {
@@ -89,8 +89,8 @@ namespace ppbox
 
         private:
             SessionGroup * create_group_with_session(
-                boost::uint32_t&  sid,      // 会话ID
-                framework::string::Url const & playlink, 
+                framework::string::Url const & url, 
+                Session *&  ses, 
                 response_t const & resp);
 
             void delete_group(
@@ -104,6 +104,11 @@ namespace ppbox
             Session * user_session(
                 boost::uint32_t sid,        // 会话ID
                 boost::system::error_code & ec);
+
+            Session * find_session(
+                boost::uint32_t sid,        // 会话ID
+                SessionGroup *& group, 
+                Session *& main_session);
 
             void start_timer();
 
@@ -128,6 +133,9 @@ namespace ppbox
             SessionGroup * current_;
             SessionGroup * next_;
             Session * session_;
+            bool canceling_;
+            std::map<std::string, Session *> named_sessions_;
+            std::vector<Session *> kick_outs_;
         };
 
     } // namespace dispatch

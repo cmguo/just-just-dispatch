@@ -25,8 +25,26 @@ namespace ppbox
             {
             }
 
+            struct find_by_session
+            {
+                find_by_session(
+                    Session * ses)
+                    : ses_(ses)
+                {
+                }
+
+                bool operator()(
+                    Request const & req)
+                {
+                    return req.session == ses_;
+                }
+
+            private:
+                Session * ses_;
+            };
+
             Session * session;
-            SeekRange const & range;
+            SeekRange range;
             response_t seek_resp;  //async_open 回调 
             response_t resp;  //async_open 回调 
         };

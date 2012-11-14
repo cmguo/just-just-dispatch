@@ -36,9 +36,6 @@ namespace ppbox
                 response_t const & seek_resp, 
                 response_t const & resp) = 0;
 
-            virtual bool cancel(
-                boost::system::error_code & ec) = 0;
-
             virtual bool pause(
                 boost::system::error_code & ec) = 0;
 
@@ -51,6 +48,9 @@ namespace ppbox
 
             virtual bool get_play_info(
                 ppbox::data::PlayInfo & info, 
+                boost::system::error_code & ec) = 0;
+
+            virtual bool cancel(
                 boost::system::error_code & ec) = 0;
 
             virtual bool close(
