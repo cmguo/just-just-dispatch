@@ -115,7 +115,7 @@ namespace ppbox
 
             Session * find_session(
                 size_t id, 
-                Session *& main_session) const;
+                Session *& main_ses) const;
 
         public:
             static Request * open_request;

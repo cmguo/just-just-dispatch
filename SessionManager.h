@@ -103,12 +103,13 @@ namespace ppbox
 
             Session * user_session(
                 boost::uint32_t sid,        // 会话ID
+                Session *& main_ses, 
                 boost::system::error_code & ec);
 
             Session * find_session(
                 boost::uint32_t sid,        // 会话ID
                 SessionGroup *& group, 
-                Session *& main_session);
+                Session *& main_ses);
 
             void start_timer();
 

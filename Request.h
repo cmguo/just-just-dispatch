@@ -15,10 +15,11 @@ namespace ppbox
         struct Request
         {
             Request(
+                Session * session, 
                 SeekRange const & range, 
                 response_t const & seek_resp, 
                 response_t const & resp)
-                : session(NULL)
+                : session(session)
                 , range(range)
                 , seek_resp(seek_resp)
                 , resp(resp)

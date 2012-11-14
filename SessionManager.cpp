@@ -153,10 +153,14 @@ namespace ppbox
         {
             LOG_XXX("setup");
 
-            Session * ses = user_session(sid, ec);
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
             if (ses) {
-                //ses->sink_group().setup(index, sink);
-                current_->dispatcher().setup(index, sink, ec);
+                if (ses == main_ses) {
+                    current_->dispatcher().setup(index, sink, ec);
+                } else {
+                    ses->sink_group().setup(index, sink);
+                }
             }
             return !ec;
         }
@@ -170,10 +174,11 @@ namespace ppbox
             LOG_XXX("async_play");
 
             boost::system::error_code ec;
-            Session * ses = user_session(sid, ec);
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
             if (ses) {
-                ses->queue_request(Request(range, seek_resp, resp));
-                bool need_next = current_->active_session(ses);
+                main_ses->queue_request(Request(ses, range, seek_resp, resp));
+                bool need_next = current_->active_session(main_ses);
                 if (need_next) {
                     if (current_->busy()) {
                         if (!canceling_) {
@@ -196,9 +201,11 @@ namespace ppbox
         {
             LOG_XXX("pause");
 
-            Session * ses = user_session(sid, ec);
-            if (ses && ses == current_->current()) {
-                current_->dispatcher().pause(ec);
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
+            if (ses && main_ses == current_->current() 
+                && (ses == main_ses || ses == main_ses->current_sub())) {
+                    current_->dispatcher().pause(ec);
             }
             return !ec;
         }
@@ -209,9 +216,11 @@ namespace ppbox
         {
             LOG_XXX("resume");
 
-            Session * ses = user_session(sid, ec);
-            if (ses && ses == current_->current()) {
-                current_->dispatcher().resume(ec);
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
+            if (ses && main_ses == current_->current() 
+                && (ses == main_ses || ses == main_ses->current_sub())) {
+                    current_->dispatcher().resume(ec);
             }
             return !ec;
         }
@@ -223,7 +232,8 @@ namespace ppbox
         {
             LOG_XXX("get_media_info");
 
-            Session * ses = user_session(sid, ec);
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
             if (ses) {
                 return current_->dispatcher().get_media_info(info, ec);
             }
@@ -237,7 +247,8 @@ namespace ppbox
         {
             LOG_XXX("get_play_info");
 
-            Session * ses = user_session(sid, ec);
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
             if (ses) {
                 return current_->dispatcher().get_play_info(info, ec);
             }
@@ -250,9 +261,11 @@ namespace ppbox
         {
             LOG_XXX("cancel");
 
-            Session * ses = user_session(sid, ec);
-            if (ses && ses == current_->current()) {
-                current_->dispatcher().cancel(ec);
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
+            if (ses && main_ses == current_->current() 
+                && (ses == main_ses || ses == main_ses->current_sub())) {
+                    current_->dispatcher().cancel(ec);
             }
             return !ec;
         }
@@ -331,21 +344,19 @@ namespace ppbox
 
         Session * SessionManager::user_session(
             boost::uint32_t sid,        // 会话ID
+            Session *& main_ses, 
             boost::system::error_code & ec)
         {
             SessionGroup * group = NULL;
-            Session * main_session = NULL;
-            Session * ses = find_session(sid, group, main_session);
+            Session * ses = find_session(sid, group, main_ses);
             if (ses == NULL) {
                 ec = error::session_not_found;
-            } else if (group != next_ || main_session != next_->next()) {
+            } else if (group != next_ || main_ses != next_->next()) {
                 ses = NULL;
                 ec = error::session_kick_out;
             } else if (!ses->opened()) {
                 ses = NULL;
                 ec = error::session_not_open;
-            } else {
-                ses = main_session;
             }
             return ses;
         }
@@ -353,18 +364,18 @@ namespace ppbox
         Session * SessionManager::find_session(
             boost::uint32_t sid,        // 会话ID
             SessionGroup *& group, 
-            Session *& main_session)
+            Session *& main_ses)
         {
-            Session * ses = current_ ? current_->find_session(sid, main_session) : NULL;
+            Session * ses = current_ ? current_->find_session(sid, main_ses) : NULL;
             if (ses) {
                 group = current_;
             } else {
-                if (next_ != current_ && (ses = next_->find_session(sid, main_session))) {
+                if (next_ != current_ && (ses = next_->find_session(sid, main_ses))) {
                     group = next_;
                 } else {
                     for (size_t i = 0; i < kick_outs_.size(); ++i) {
                         if ((ses = (kick_outs_[i]->id() == sid ? kick_outs_[i] : NULL)) || (ses = kick_outs_[i]->find_sub(sid))) {
-                            main_session = kick_outs_[i];
+                            main_ses = kick_outs_[i];
                             group = (SessionGroup *)1; // deleted group
                             return ses;
                         }

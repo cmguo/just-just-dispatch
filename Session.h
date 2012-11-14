@@ -98,7 +98,7 @@ namespace ppbox
 
             Session * current_sub() const
             {
-                return current_;
+                return current_ == this ? NULL : current_;
             };
 
         public:

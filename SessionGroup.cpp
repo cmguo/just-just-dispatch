@@ -244,20 +244,20 @@ namespace ppbox
 
         Session * SessionGroup::find_session(
             size_t id, 
-            Session *& main_session) const
+            Session *& main_ses) const
         {
             Session * ses = NULL;
             if (current_ && ((ses = (current_->id() == id ? current_ : NULL)) || (ses = current_->find_sub(id)))) {
-                main_session = current_;
+                main_ses = current_;
                 return ses;
             }
             if (next_ != current_ && ((ses = (next_->id() == id ? next_ : NULL)) || (ses = next_->find_sub(id)))) {
-                main_session = next_;
+                main_ses = next_;
                 return ses;
             }
             for (size_t i = 0; i < kick_outs_.size(); ++i) {
                 if ((ses = (kick_outs_[i]->id() == id ? kick_outs_[i] : NULL)) || (ses = kick_outs_[i]->find_sub(id))) {
-                    main_session = kick_outs_[i];
+                    main_ses = kick_outs_[i];
                     return ses;
                 }
             }

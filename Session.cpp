@@ -63,11 +63,15 @@ namespace ppbox
                 // setup response
             } else {
                 assert(!play_reqs_.empty());
+                assert(play_reqs_.front().session == current_);
                 response_t resp;
                 play_reqs_.front().resp.swap(resp);
                 play_reqs_.pop_front();
                 io_svc_.post(boost::bind(resp, ec));
                 playing_ = false;
+                if (current_ != this && current_->closed()) {
+                    close_sub(current_);
+                }
             }
         }
 
@@ -110,6 +114,9 @@ namespace ppbox
                 ses->mark_close();
                 return true;
             } else {
+                if (ses == current_) {
+                    current_ = NULL;
+                }
                 sub_sessions_.erase(iter);
                 cancel_sub_request(ses, boost::asio::error::operation_aborted);
                 ses->cancel(boost::asio::error::operation_aborted);
