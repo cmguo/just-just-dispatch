@@ -103,7 +103,7 @@ namespace ppbox
         bool Session::close_sub(
             Session * ses)
         {
-            std::vector<Session *>::const_iterator iter = 
+            std::vector<Session *>::iterator iter = 
                 std::find(sub_sessions_.begin(), sub_sessions_.end(), ses);
             assert(iter != sub_sessions_.end());
             if (ses == current_ && playing_) {
