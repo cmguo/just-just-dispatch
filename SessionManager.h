@@ -132,7 +132,6 @@ namespace ppbox
         private:
             SessionGroup * current_;
             SessionGroup * next_;
-            Session * session_;
             bool canceling_;
             std::map<std::string, Session *> named_sessions_;
             std::vector<Session *> kick_outs_;

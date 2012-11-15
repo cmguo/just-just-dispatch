@@ -42,6 +42,9 @@ namespace ppbox
         Request * Session::request()
         {
             if (play_reqs_.empty()) {
+                if (current_ != this) {
+                    current_ = NULL;
+                }
                 return NULL;
             }
             if (current_ != play_reqs_.front().session) {

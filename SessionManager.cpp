@@ -32,7 +32,6 @@ namespace ppbox
             , timer_lanched_(false)
             , current_(NULL)
             , next_(NULL)
-            , session_(NULL)
             , canceling_(false)
         {
             thread_ = new DispatchThread;
@@ -396,10 +395,23 @@ namespace ppbox
             return ses;
         }
 
+        static inline boost::uint32_t current_id(
+            SessionGroup * group)
+        {
+            Session * ses = group->current();
+            if (ses == NULL)
+                return 0;
+            if (ses->current_sub()) {
+                return ses->current_sub()->id();
+            } else {
+                return ses->id();
+            }
+        }
+
         void SessionManager::handle_request(
             boost::system::error_code const & ec)
         {
-            boost::uint32_t sid = session_ ? session_->id() : 0;
+            boost::uint32_t sid = current_id(current_);
             LOG_XXX2("handle_request", ec);
 
             canceling_ = false;
@@ -431,7 +443,7 @@ namespace ppbox
 
         void SessionManager::next_request()
         {
-            boost::uint32_t sid = session_ ? session_->id() : 0;
+            boost::uint32_t sid = current_id(current_);
             LOG_XXX("next_request");
 
             assert(current_);
@@ -442,36 +454,23 @@ namespace ppbox
                 return;
             }
             if (req == SessionGroup::open_request) {
-                session_ = current_->first();
                 current_->dispatcher().async_open(current_->url(), 
                     boost::bind(&SessionManager::handle_request, this, _1));
             } else if (req == SessionGroup::switch_request) {
                 boost::system::error_code ec;
-                session_ = current_->current();
-                current_->dispatcher().assign(session_->url(), ec);
+                current_->dispatcher().assign(current_->current()->url(), ec);
                 handle_request(ec);
             } else if (req == Session::setup_request) {
                 boost::system::error_code ec;
-                current_->dispatcher().setup(session_->current_sub()->sink_group(), ec);
+                current_->dispatcher().setup(current_->current()->current_sub()->sink_group(), ec);
                 handle_request(ec);
             } else if (req == SessionGroup::buffer_request) {
                 current_->dispatcher().async_buffer(
                     boost::bind(&SessionManager::handle_request, this, _1));
             } else if (req == SessionGroup::delete_request) {
-                session_ = NULL;
                 delete_group(current_);
                 current_ = next_ = NULL;
             } else {
-                //if (req->session != session_) {
-                //    session_ = req->session;
-                //    boost::system::error_code ec;
-                //    if (!current_->dispatcher().assign(session_->url(), ec) || 
-                //        !current_->dispatcher().setup(session_->sink_group(), ec)) {
-                //            io_svc().post(
-                //                boost::bind(&SessionManager::handle_request, this, ec));
-                //            return;
-                //    }
-                //}
                 current_->dispatcher().async_play(req->range, req->seek_resp, 
                     boost::bind(&SessionManager::handle_request, this, _1));
             }
