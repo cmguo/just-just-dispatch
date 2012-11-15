@@ -399,7 +399,7 @@ namespace ppbox
             SessionGroup * group)
         {
             Session * ses = group->current();
-            if (ses == NULL)
+            if (ses == NULL || ses == SessionGroup::delete_session)
                 return 0;
             if (ses->current_sub()) {
                 return ses->current_sub()->id();

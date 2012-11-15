@@ -175,6 +175,8 @@ namespace ppbox
             }
             if (!ec) {
                 merger_->reset(ec);
+                if (ec == boost::asio::error::would_block)
+                    ec.clear();
             }
             return !ec;
         }

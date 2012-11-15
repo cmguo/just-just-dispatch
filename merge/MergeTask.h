@@ -70,6 +70,14 @@ namespace ppbox
                 return merger_->time_seek(beg, ec);
             }
 */
+            boost::uint64_t check_seek(
+                boost::system::error_code & ec)
+            {
+                boost::system::error_code ec_buf;
+                merger_->get_buffer_time(ec, ec_buf);
+                return 0;
+            }
+
         private:
             ppbox::merge::MergerBase * merger_;
         };
