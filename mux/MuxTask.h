@@ -6,7 +6,7 @@
 #include "ppbox/dispatch/Task.h"
 
 #include <ppbox/mux/MuxerBase.h>
-#include <ppbox/demux/base/SegmentDemuxer.h>
+#include <ppbox/demux/base/DemuxerBase.h>
 
 namespace ppbox
 {
@@ -24,7 +24,7 @@ namespace ppbox
                 SeekRange const & range, 
                 response_t const & seek_resp, 
                 response_t const & resp, 
-                ppbox::demux::SegmentDemuxer* demuxer,
+                ppbox::demux::DemuxerBase* demuxer,
                 ppbox::mux::MuxerBase *muxer)
                 : Task<MuxTask>(config, sinks, range, seek_resp, resp)
                 , demuxer_(demuxer)
@@ -35,7 +35,7 @@ namespace ppbox
             MuxTask(
                 TaskConfig & config, 
                 response_t const & resp, 
-                ppbox::demux::SegmentDemuxer* demuxer,
+                ppbox::demux::DemuxerBase* demuxer,
                 ppbox::mux::MuxerBase *muxer)
                 : Task<MuxTask>(config, resp)
                 , demuxer_(demuxer)
@@ -54,8 +54,7 @@ namespace ppbox
             bool buffer(
                 boost::system::error_code & ec)
             {
-                boost::system::error_code ec1;
-                demuxer_->get_buffer_time(ec1, ec);
+                demuxer_->resume(ec);
                 return !ec;
             }
 
@@ -82,7 +81,7 @@ namespace ppbox
             }
 
         private:
-            ppbox::demux::SegmentDemuxer* demuxer_;
+            ppbox::demux::DemuxerBase* demuxer_;
             ppbox::mux::MuxerBase * muxer_;
         };
 

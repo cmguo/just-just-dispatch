@@ -3,8 +3,8 @@
 #ifndef _PPBOX_DISPATCH_DISPATCH_BASE_H_
 #define _PPBOX_DISPATCH_DISPATCH_BASE_H_
 
-#include <ppbox/data/MediaInfo.h>
-#include <ppbox/data/PlayInfo.h>
+#include <ppbox/data/base/MediaInfo.h>
+#include <ppbox/data/base/PlayInfo.h>
 
 #include <util/stream/Sink.h>
 

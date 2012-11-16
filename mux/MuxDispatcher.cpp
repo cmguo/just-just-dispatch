@@ -9,7 +9,7 @@
 #include <ppbox/mux/MuxError.h>
 
 #include <ppbox/demux/DemuxModule.h>
-#include <ppbox/demux/base/SegmentDemuxer.h>
+#include <ppbox/demux/base/DemuxerBase.h>
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -53,7 +53,7 @@ namespace ppbox
         void MuxDispatcher::handle_open(
             framework::string::Url const & url, 
             boost::system::error_code const & ec,
-            ppbox::demux::SegmentDemuxer * demuxer)
+            ppbox::demux::DemuxerBase * demuxer)
         {
             LOG_DEBUG("[handle_open] ec:" << ec.message());
             demuxer_ = demuxer;

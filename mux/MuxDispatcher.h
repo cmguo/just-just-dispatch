@@ -9,7 +9,7 @@ namespace ppbox
 {
     namespace demux
     {
-        class SegmentDemuxer;
+        class DemuxerBase;
         class DemuxModule;
     }
 
@@ -73,7 +73,7 @@ namespace ppbox
             void handle_open(
                 framework::string::Url const & url, 
                 boost::system::error_code const & ec, 
-                ppbox::demux::SegmentDemuxer * demuxer);
+                ppbox::demux::DemuxerBase * demuxer);
 
             void handle_play(
                 boost::system::error_code const & ec);
@@ -92,7 +92,7 @@ namespace ppbox
             ppbox::mux::MuxModule & muxer_module_;
 
             size_t  demux_close_token_;
-            ppbox::demux::SegmentDemuxer* demuxer_;
+            ppbox::demux::DemuxerBase* demuxer_;
             ppbox::mux::MuxerBase *muxer_;
 
             std::string format_;
