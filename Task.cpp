@@ -72,7 +72,6 @@ namespace ppbox
             framework::timer::Time send_time = start_time_ 
                 + framework::timer::Duration::milliseconds(sample.time);
             if (send_time > framework::timer::Time::now()) {
-                std::cout << "[check_speed] sleep" << std::endl;
                 sleep();
             }
         }
