@@ -43,7 +43,7 @@ namespace ppbox
         void MuxDispatcher::start_open(
             framework::string::Url const & url)
         {
-            LOG_DEBUG("[start_open] playlink:"<< url.param(param_playlink));
+            LOG_DEBUG("[start_open] playlink:"<< url.param(param_playlink) << " format:" << url.param(param_format));
             demuxer_module_.async_open(
                 framework::string::Url(url.param(param_playlink)), 
                 demux_close_token_, 
@@ -175,6 +175,7 @@ namespace ppbox
         {
             TaskDispatcher::assign(url, ec);
             std::string format = url.param(param_format);
+            LOG_DEBUG("[assign] format:" << format);
             if (format_ != format) {
                 close_muxer(ec);
                 format_ = format;
