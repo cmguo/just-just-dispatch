@@ -96,6 +96,10 @@ namespace ppbox
             Session * find_sub(
                 boost::uint32_t id);
 
+            // 自己也算sub会话
+            Session * find_sub2(
+                boost::uint32_t id);
+
             Session * current_sub() const
             {
                 return current_ == this ? NULL : current_;

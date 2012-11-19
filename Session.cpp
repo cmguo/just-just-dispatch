@@ -137,6 +137,15 @@ namespace ppbox
             return iter == sub_sessions_.end() ? NULL : *iter;
         }
 
+        Session * Session::find_sub2(
+            boost::uint32_t id)
+        {
+            if (id == id_) {
+                return this;
+            }
+            return find_sub(id);
+        }
+
         void Session::queue_request(
             Request const & r)
         {

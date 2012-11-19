@@ -216,9 +216,8 @@ namespace ppbox
 
             Session * main_ses = NULL;
             Session * ses = user_session(sid, main_ses, ec);
-            if (ses && main_ses == current_->current() 
-                && (ses == main_ses || ses == main_ses->current_sub())) {
-                    current_->dispatcher().pause(ec);
+            if (ses && (ses == main_ses || ses == main_ses->current_sub())) {
+                current_->dispatcher().pause(ec);
             }
             return !ec;
         }
@@ -231,9 +230,8 @@ namespace ppbox
 
             Session * main_ses = NULL;
             Session * ses = user_session(sid, main_ses, ec);
-            if (ses && main_ses == current_->current() 
-                && (ses == main_ses || ses == main_ses->current_sub())) {
-                    current_->dispatcher().resume(ec);
+            if (ses && (ses == main_ses || ses == main_ses->current_sub())) {
+                current_->dispatcher().resume(ec);
             }
             return !ec;
         }
@@ -276,9 +274,8 @@ namespace ppbox
 
             Session * main_ses = NULL;
             Session * ses = user_session(sid, main_ses, ec);
-            if (ses && main_ses == current_->current() 
-                && (ses == main_ses || ses == main_ses->current_sub())) {
-                    current_->dispatcher().cancel(ec);
+            if (ses && (ses == main_ses || ses == main_ses->current_sub())) {
+                current_->dispatcher().cancel(ec);
             }
             return !ec;
         }
