@@ -37,10 +37,6 @@ namespace ppbox
                 ppbox::data::MediaInfo & info, 
                 boost::system::error_code & ec);
 
-            virtual bool get_play_info(
-                ppbox::data::PlayInfo & info, 
-                boost::system::error_code & ec);
-
         public:
             virtual bool accept(
                 framework::string::Url const & url);
@@ -64,6 +60,10 @@ namespace ppbox
             virtual void start_buffer();
 
             virtual void cancel_open(
+                boost::system::error_code & ec);
+
+            virtual void do_get_stream_status(
+                ppbox::data::StreamStatus & info, 
                 boost::system::error_code & ec);
 
             virtual void do_close(

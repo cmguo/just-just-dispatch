@@ -38,7 +38,7 @@ namespace ppbox
             boost::asio::io_service & dispatch_io_svc)
             : DispatcherBase(io_svc)
             , dispatch_io_svc_(dispatch_io_svc)
-            , config_(io_svc)
+            , task_info_(io_svc)
             , async_type_(none)
         {
         }
@@ -56,7 +56,7 @@ namespace ppbox
             assert(async_type_ == none);
             async_type_ = open;
             resp_ = resp;
-            config_.fast = url.param("dispatch.fast") == "true";
+            task_info_.fast = url.param("dispatch.fast") == "true";
             start_open(url);
         }
 
@@ -132,7 +132,7 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[assign]");
-            config_.fast = url.param("dispatch.fast") == "true";
+            task_info_.fast = url.param("dispatch.fast") == "true";
             ec.clear();
             return true;
         }
@@ -146,6 +146,22 @@ namespace ppbox
             async_type_ = buffer;
             resp_ = resp;
             start_buffer();
+        }
+
+        bool TaskDispatcher::get_stream_status(
+            ppbox::data::StreamStatus & status, 
+            boost::system::error_code & ec)
+        {
+            LOG_DEBUG("[get_stream_status]");
+
+            if (async_type_ == none) {
+                do_get_stream_status(status, ec);
+                return !ec;
+            } else {
+                status = task_info_.status;
+                ec.clear();
+                return true;
+            }
         }
 
         bool TaskDispatcher::cancel(
@@ -194,21 +210,21 @@ namespace ppbox
         void TaskDispatcher::task_cancel(
             boost::system::error_code & ec)
         {
-            config_.cancel = true;
+            task_info_.cancel = true;
             ec.clear();
         }
 
         void TaskDispatcher::task_pause(
             boost::system::error_code & ec)
         {
-            config_.pause = true;
+            task_info_.pause = true;
             ec.clear();
         }
 
         void TaskDispatcher::task_resume(
             boost::system::error_code & ec)
         {
-            config_.pause = false;
+            task_info_.pause = false;
             ec.clear();
         }
 
@@ -226,8 +242,8 @@ namespace ppbox
             boost::system::error_code const & ec)
         {
             assert(async_type_ != none);
-            config_.cancel = false;
-            config_.pause = false;
+            task_info_.cancel = false;
+            task_info_.pause = false;
             async_type_ = none;
             response_t resp;
             resp.swap(resp_);

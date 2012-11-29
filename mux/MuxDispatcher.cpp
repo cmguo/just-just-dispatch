@@ -101,7 +101,7 @@ namespace ppbox
             response_t const & seek_resp)
         {
             LOG_DEBUG("[start_play]");
-            dispatch_io_svc().post(MuxTask(config(), sink_group(), range, seek_resp, 
+            dispatch_io_svc().post(MuxTask(task_info(), sink_group(), range, seek_resp, 
                 boost::bind(&MuxDispatcher::handle_play, this, _1), demuxer_, muxer_));
         }
 
@@ -119,7 +119,7 @@ namespace ppbox
         void MuxDispatcher::start_buffer()
         {
             LOG_DEBUG("[start_buffer]");
-            dispatch_io_svc().post(MuxTask(config(), 
+            dispatch_io_svc().post(MuxTask(task_info(), 
                 boost::bind(&MuxDispatcher::handle_buffer, this, _1), 
                 demuxer_, muxer_));
         }
@@ -153,14 +153,13 @@ namespace ppbox
             return true;
         }
 
-        bool MuxDispatcher::get_play_info(
-            ppbox::data::PlayInfo & info, 
+        void MuxDispatcher::do_get_stream_status(
+            ppbox::data::StreamStatus & info, 
             boost::system::error_code & ec)
         {
-            LOG_DEBUG("[get_play_info]");
-            muxer_->play_info(info);
+            LOG_DEBUG("[do_get_stream_status]");
+            muxer_->stream_status(info);
             ec.clear();
-            return true;
         }
 
         bool MuxDispatcher::accept(

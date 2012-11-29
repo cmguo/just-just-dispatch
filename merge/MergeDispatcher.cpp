@@ -97,7 +97,7 @@ namespace ppbox
             response_t const & seek_resp)
         {
             LOG_DEBUG("[start_play]");
-            dispatch_io_svc().post(MergeTask(config(), sink_group(), range, seek_resp, 
+            dispatch_io_svc().post(MergeTask(task_info(), sink_group(), range, seek_resp, 
                 boost::bind(&MergeDispatcher::handle_play, this, _1), merger_));
         }
 
@@ -115,7 +115,7 @@ namespace ppbox
         void MergeDispatcher::start_buffer()
         {
             LOG_DEBUG("[start_buffer]");
-            dispatch_io_svc().post(MergeTask(config(), 
+            dispatch_io_svc().post(MergeTask(task_info(), 
                 boost::bind(&MergeDispatcher::handle_buffer, this, _1), merger_));
         }
 
@@ -147,14 +147,13 @@ namespace ppbox
             return true;
         }
 
-        bool MergeDispatcher::get_play_info(
-            ppbox::data::PlayInfo & info, 
+        void MergeDispatcher::do_get_stream_status(
+            ppbox::data::StreamStatus & info, 
             boost::system::error_code & ec)
         {
-            LOG_DEBUG("[get_play_info]");
-            merger_->play_info(info);
+            LOG_DEBUG("[do_get_stream_status]");
+            merger_->stream_status(info);
             ec.clear();
-            return true;
         }
 
         bool MergeDispatcher::accept(

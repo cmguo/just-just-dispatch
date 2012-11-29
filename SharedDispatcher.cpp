@@ -69,11 +69,11 @@ namespace ppbox
             return manager_.get_media_info(session_id_, info, ec);
         }
 
-        bool SharedDispatcher::get_play_info(
-            ppbox::data::PlayInfo & info, 
+        bool SharedDispatcher::get_stream_status(
+            ppbox::data::StreamStatus & info, 
             boost::system::error_code & ec)
         {
-            return manager_.get_play_info(session_id_, info, ec);
+            return manager_.get_stream_status(session_id_, info, ec);
         }
 
         bool SharedDispatcher::cancel(

@@ -91,11 +91,11 @@ namespace ppbox
             return dispatcher_->get_media_info(info, ec);
         }
 
-        bool SingleDispatcher::get_play_info(
-            ppbox::data::PlayInfo & info, 
+        bool SingleDispatcher::get_stream_status(
+            ppbox::data::StreamStatus & status, 
             boost::system::error_code & ec)
         {
-            return dispatcher_->get_play_info(info, ec);
+            return dispatcher_->get_stream_status(status, ec);
         }
 
         bool SingleDispatcher::cancel(

@@ -68,9 +68,9 @@ namespace ppbox
                 ppbox::data::MediaInfo & info, 
                 boost::system::error_code & ec);
 
-            bool get_play_info(
+            bool get_stream_status(
                 boost::uint32_t sid,        // »á»°ID
-                ppbox::data::PlayInfo & info, 
+                ppbox::data::StreamStatus & info, 
                 boost::system::error_code & ec);
 
             bool cancel(

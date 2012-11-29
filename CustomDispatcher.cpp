@@ -67,11 +67,11 @@ namespace ppbox
             return dispatcher_.get_media_info(info, ec);
         }
 
-        bool CustomDispatcher::get_play_info(
-            ppbox::data::PlayInfo & info, 
+        bool CustomDispatcher::get_stream_status(
+            ppbox::data::StreamStatus & info, 
             boost::system::error_code & ec)
         {
-            return dispatcher_.get_play_info(info, ec);
+            return dispatcher_.get_stream_status(info, ec);
         }
 
         bool CustomDispatcher::close(

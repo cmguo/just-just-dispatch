@@ -10,16 +10,13 @@ namespace ppbox
 
         struct TaskConfig
         {
-            TaskConfig(
-                boost::asio::io_service & io_svc)
-                : io_svc(io_svc)
-                , fast(false)
+            TaskConfig()
+                : fast(false)
                 , cancel(false)
                 , pause(false)
             {
             }
 
-            boost::asio::io_service & io_svc;
             bool fast;
             bool cancel;
             bool pause;

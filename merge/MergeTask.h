@@ -18,7 +18,7 @@ namespace ppbox
         {
         public:
             MergeTask(
-                TaskConfig & config, 
+                TaskInfo & config, 
                 SinkGroup & sinks, 
                 SeekRange const & range, 
                 response_t const & seek_resp, 
@@ -30,7 +30,7 @@ namespace ppbox
             }
             
             MergeTask(
-                TaskConfig & config, 
+                TaskInfo & config, 
                 response_t const & resp, 
                 ppbox::merge::MergerBase * merger)
                 : Task<MergeTask>(config, resp)

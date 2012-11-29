@@ -251,17 +251,17 @@ namespace ppbox
             return false;
         }
 
-        bool SessionManager::get_play_info(
+        bool SessionManager::get_stream_status(
             boost::uint32_t sid, 
-            ppbox::data::PlayInfo & info, 
+            ppbox::data::StreamStatus & status, 
             boost::system::error_code & ec)
         {
-            LOG_XXX("get_play_info");
+            LOG_XXX("get_stream_status");
 
             Session * main_ses = NULL;
             Session * ses = user_session(sid, main_ses, ec);
             if (ses) {
-                return current_->dispatcher().get_play_info(info, ec);
+                return current_->dispatcher().get_stream_status(status, ec);
             }
             return false;
         }

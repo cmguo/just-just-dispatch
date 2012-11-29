@@ -16,9 +16,9 @@ namespace ppbox
     {
 
         TaskBase::TaskBase(
-            TaskConfig & config, 
+            TaskInfo & task_info, 
             response_t const & resp)
-            : config_(config)
+            : task_info_(task_info)
             , sinks_(*(SinkGroup *)NULL)
             , resp_(resp)
             , buffer_finish_(false)
@@ -26,12 +26,12 @@ namespace ppbox
         }
 
         TaskBase::TaskBase(
-            TaskConfig & config, 
+            TaskInfo & task_info, 
             SinkGroup & sinks, 
             SeekRange const & range, 
             response_t const & seek_resp, 
             response_t const & resp)
-            : config_(config)
+            : task_info_(task_info)
             , sinks_(sinks)
             , range_(range)
             , seek_resp_(seek_resp)
@@ -91,7 +91,7 @@ namespace ppbox
             response_t const & resp, 
             boost::system::error_code const & ec) const
         {
-            config_.io_svc.post(boost::bind(resp, ec));
+            task_info_.io_svc.post(boost::bind(resp, ec));
         }
 
     } // namespace dispatch

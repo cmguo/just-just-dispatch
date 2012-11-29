@@ -19,7 +19,7 @@ namespace ppbox
         {
         public:
             MuxTask(
-                TaskConfig & config, 
+                TaskInfo & config, 
                 SinkGroup & sinks, 
                 SeekRange const & range, 
                 response_t const & seek_resp, 
@@ -33,7 +33,7 @@ namespace ppbox
             }
             
             MuxTask(
-                TaskConfig & config, 
+                TaskInfo & config, 
                 response_t const & resp, 
                 ppbox::demux::DemuxerBase* demuxer,
                 ppbox::mux::MuxerBase *muxer)
@@ -54,7 +54,7 @@ namespace ppbox
             bool buffer(
                 boost::system::error_code & ec)
             {
-                demuxer_->resume(ec);
+                demuxer_->fill_data(ec);
                 return !ec;
             }
 
@@ -77,7 +77,14 @@ namespace ppbox
             boost::uint64_t check_seek(
                 boost::system::error_code & ec)
             {
-                return demuxer_->get_cur_time(ec);
+                return demuxer_->check_seek(ec);
+            }
+
+            void update_status(
+                ppbox::data::StreamStatus & status)
+            {
+                boost::system::error_code ec;
+                demuxer_->get_stream_status(status, ec);
             }
 
         private:

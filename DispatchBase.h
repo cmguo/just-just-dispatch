@@ -4,7 +4,7 @@
 #define _PPBOX_DISPATCH_DISPATCH_BASE_H_
 
 #include <ppbox/data/base/MediaInfo.h>
-#include <ppbox/data/base/PlayInfo.h>
+#include <ppbox/data/base/StreamStatus.h>
 
 #include <util/stream/Sink.h>
 

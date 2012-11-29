@@ -4,7 +4,7 @@
 #define _PPBOX_DISPATCH_TASK_DISPATCHER_H_
 
 #include "ppbox/dispatch/DispatcherBase.h"
-#include "ppbox/dispatch/TaskConfig.h"
+#include "ppbox/dispatch/TaskInfo.h"
 #include "ppbox/dispatch/SinkGroup.h"
 
 #include <ppbox/common/ClassFactory.h>
@@ -60,6 +60,10 @@ namespace ppbox
             virtual bool resume(
                 boost::system::error_code & ec);
 
+            virtual bool get_stream_status(
+                ppbox::data::StreamStatus & status, 
+                boost::system::error_code & ec);
+
             virtual bool cancel(
                 boost::system::error_code & ec);
 
@@ -90,9 +94,9 @@ namespace ppbox
                 return dispatch_io_svc_;
             }
 
-            TaskConfig & config()
+            TaskInfo & task_info()
             {
-                return config_;
+                return task_info_;
             }
 
             SinkGroup & sink_group()
@@ -123,6 +127,10 @@ namespace ppbox
             virtual void cancel_buffer(
                 boost::system::error_code & ec);
 
+            virtual void do_get_stream_status(
+                ppbox::data::StreamStatus & status, 
+                boost::system::error_code & ec) = 0;
+
             virtual void do_close(
                 boost::system::error_code & ec) = 0;
 
@@ -147,7 +155,7 @@ namespace ppbox
 
         private:
             boost::asio::io_service & dispatch_io_svc_;
-            TaskConfig config_;
+            TaskInfo task_info_;
             AsyncTypeEnum async_type_;
             response_t resp_;
             SinkGroup sink_group_;

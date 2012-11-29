@@ -52,8 +52,8 @@ namespace ppbox
                 ppbox::data::MediaInfo & info, 
                 boost::system::error_code & ec);
 
-            virtual bool get_play_info(
-                ppbox::data::PlayInfo & info, 
+            virtual bool get_stream_status(
+                ppbox::data::StreamStatus & info, 
                 boost::system::error_code & ec);
 
         protected:
