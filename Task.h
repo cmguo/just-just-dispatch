@@ -20,11 +20,11 @@ namespace ppbox
         {
         public:
             TaskBase(
-                TaskInfo & config, 
+                TaskInfo & info, 
                 response_t const & resp);
 
             TaskBase(
-                TaskInfo & config, 
+                TaskInfo & info, 
                 SinkGroup & sinks, 
                 SeekRange const & range, 
                 response_t const & seek_resp, 
@@ -115,19 +115,19 @@ namespace ppbox
         {
         public:
             Task(
-                TaskInfo & config, 
+                TaskInfo & info, 
                 response_t const & resp)
-                : TaskBase(config, resp)
+                : TaskBase(info, resp)
             {
             }
 
             Task(
-                TaskInfo & config, 
+                TaskInfo & info, 
                 SinkGroup & sinks, 
                 SeekRange const & range, 
                 response_t const & seek_resp, 
                 response_t const & resp)
-                : TaskBase(config, sinks, range, seek_resp, resp)
+                : TaskBase(info, sinks, range, seek_resp, resp)
             {
             }
 

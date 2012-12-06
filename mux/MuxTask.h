@@ -19,25 +19,25 @@ namespace ppbox
         {
         public:
             MuxTask(
-                TaskInfo & config, 
+                TaskInfo & info, 
                 SinkGroup & sinks, 
                 SeekRange const & range, 
                 response_t const & seek_resp, 
                 response_t const & resp, 
                 ppbox::demux::DemuxerBase* demuxer,
                 ppbox::mux::MuxerBase *muxer)
-                : Task<MuxTask>(config, sinks, range, seek_resp, resp)
+                : Task<MuxTask>(info, sinks, range, seek_resp, resp)
                 , demuxer_(demuxer)
                 , muxer_(muxer)
             {
             }
             
             MuxTask(
-                TaskInfo & config, 
+                TaskInfo & info, 
                 response_t const & resp, 
                 ppbox::demux::DemuxerBase* demuxer,
                 ppbox::mux::MuxerBase *muxer)
-                : Task<MuxTask>(config, resp)
+                : Task<MuxTask>(info, resp)
                 , demuxer_(demuxer)
                 , muxer_(muxer)
             {
