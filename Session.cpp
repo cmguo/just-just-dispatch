@@ -12,31 +12,35 @@ namespace ppbox
 
         Request * Session::setup_request = (Request *)0x11;
 
+        static inline boost::uint32_t session_id()
+        {
+            static boost::uint32_t gid = 0;
+            return ++gid;
+        }
+
         Session::Session(
             boost::asio::io_service & io_svc, 
             framework::string::Url const & url, 
             response_t const & resp)
-            : io_svc_(io_svc)
+            : id_(session_id())
+            , io_svc_(io_svc)
             , url_(url)
             , resp_(resp)
             , current_(this)
             , playing_(false)
         {
-            static boost::uint32_t gid = 0;
-            id_ = ++gid;
         }
 
         Session::Session(
             boost::asio::io_service & io_svc, 
             framework::string::Url const & url)
-            : io_svc_(io_svc)
+            : id_(session_id())
+            , io_svc_(io_svc)
             , url_(url)
             , resp_(boost::bind(&Session::response_sub_open, this, _1))
             , current_(NULL)
             , playing_(false)
         {
-            static boost::uint32_t gid = 0;
-            id_ = ++gid;
         }
 
         Request * Session::request()
