@@ -44,26 +44,7 @@ namespace ppbox
             ppbox::avformat::Sample & sample, 
             boost::system::error_code & ec) const
         {
-            using boost::asio::buffer_size;
-
-            size_t n = sinks_.write(sample.itrack, sample.data, ec);
-            if (n == sample.size) {
-                sample.data.clear();
-                return true;
-            } else {
-                sample.size -= n;
-                while (n >= buffer_size(sample.data.front())) {
-                    n -= buffer_size(sample.data.front());
-                    sample.data.pop_front();
-                }
-                if (n) {
-                    sample.data.front() = sample.data.front() + n;
-                }
-                if (!ec) {
-                    ec = boost::asio::error::would_block;
-                }
-                return false;
-            }
+            return sinks_.write(sample, ec);
         }
 
         void TaskBase::check_speed(

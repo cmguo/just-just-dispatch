@@ -7,8 +7,6 @@
 #include <ppbox/data/base/StreamStatus.h>
 #include <ppbox/avformat/Format.h>
 
-#include <util/stream/Sink.h>
-
 #include <framework/string/Url.h>
 
 #include <boost/function.hpp>
@@ -27,6 +25,7 @@ namespace ppbox
             boost::system::error_code const &)> response_t;
 
         class DispatcherBase;
+        class Sink;
 
         static char const * const param_playlink = "playlink";
         static char const * const param_format = "format";

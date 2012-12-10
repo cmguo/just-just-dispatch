@@ -17,7 +17,7 @@ namespace ppbox
 
         void SinkGroup::setup(
             boost::uint32_t index, 
-            util::stream::Sink & sink)
+            Sink & sink)
         {
             if (index == (boost::uint32_t)-1) {
                 default_sink_ = &sink;
@@ -28,15 +28,34 @@ namespace ppbox
             }
         }
 
-        size_t SinkGroup::write(
-            boost::uint32_t index, 
-            util::stream::Sink::buffers_t const & buffers, 
+        bool SinkGroup::write(
+            Sample & sample, 
             boost::system::error_code & ec)
         {
-            if (index < sinks_.size()) {
-                return sinks_[index]->write_some(buffers, ec);
+            using boost::asio::buffer_size;
+
+            size_t n = 0;
+            if (sample.itrack < sinks_.size()) {
+                n = sinks_[sample.itrack]->write(sample, ec);
             } else {
-                return default_sink_->write_some(buffers, ec);
+                n = default_sink_->write(sample, ec);
+            }
+            if (n == sample.size) {
+                sample.data.clear();
+                return true;
+            } else {
+                sample.size -= n;
+                while (n >= buffer_size(sample.data.front())) {
+                    n -= buffer_size(sample.data.front());
+                    sample.data.pop_front();
+                }
+                if (n) {
+                    sample.data.front() = sample.data.front() + n;
+                }
+                if (!ec) {
+                    ec = boost::asio::error::would_block;
+                }
+                return false;
             }
         }
 

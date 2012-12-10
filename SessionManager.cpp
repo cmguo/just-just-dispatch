@@ -161,7 +161,7 @@ namespace ppbox
         bool SessionManager::setup(
             boost::uint32_t sid, 
             boost::uint32_t index, 
-            util::stream::Sink & sink, 
+            Sink & sink, 
             boost::system::error_code & ec)
         {
             LOG_XXX("setup");

@@ -18,11 +18,10 @@ namespace ppbox
         public:
             void setup(
                 boost::uint32_t index, 
-                util::stream::Sink & sink);
+                Sink & sink);
 
-            size_t write(
-                boost::uint32_t index, 
-                util::stream::Sink::buffers_t const & buffers, 
+            bool write(
+                Sample & sample, 
                 boost::system::error_code & ec);
 
         public:
@@ -46,8 +45,8 @@ namespace ppbox
             static DropSink drop_sink_;
 
         private:
-            std::vector<util::stream::Sink *> sinks_;
-            util::stream::Sink * default_sink_;
+            std::vector<Sink *> sinks_;
+            Sink * default_sink_;
         };
 
     } // namespace dispatch

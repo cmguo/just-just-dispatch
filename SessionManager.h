@@ -46,7 +46,7 @@ namespace ppbox
             bool setup(
                 boost::uint32_t sid,        // »á»°ID
                 boost::uint32_t index,      // Á÷±àºÅ
-                util::stream::Sink & sink, 
+                Sink & sink, 
                 boost::system::error_code & ec); 
 
             void async_play(
