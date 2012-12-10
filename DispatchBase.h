@@ -5,6 +5,7 @@
 
 #include <ppbox/data/base/MediaInfo.h>
 #include <ppbox/data/base/StreamStatus.h>
+#include <ppbox/avformat/Format.h>
 
 #include <util/stream/Sink.h>
 
@@ -16,6 +17,11 @@ namespace ppbox
 {
     namespace dispatch
     {
+
+        using ppbox::data::MediaInfo;
+        using ppbox::data::StreamStatus;
+        using ppbox::avformat::Sample;
+        using ppbox::avformat::StreamInfo;
 
         typedef boost::function<void (
             boost::system::error_code const &)> response_t;

@@ -63,14 +63,21 @@ namespace ppbox
         }
 
         bool SharedDispatcher::get_media_info(
-            ppbox::data::MediaInfo & info, 
+            MediaInfo & info, 
             boost::system::error_code & ec)
         {
             return manager_.get_media_info(session_id_, info, ec);
         }
 
+        bool SharedDispatcher::get_stream_info(
+            std::vector<StreamInfo> & stream, 
+            boost::system::error_code & ec)
+        {
+            return manager_.get_stream_info(session_id_, stream, ec);
+        }
+
         bool SharedDispatcher::get_stream_status(
-            ppbox::data::StreamStatus & info, 
+            StreamStatus & info, 
             boost::system::error_code & ec)
         {
             return manager_.get_stream_status(session_id_, info, ec);

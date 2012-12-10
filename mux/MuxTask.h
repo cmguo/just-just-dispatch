@@ -81,7 +81,7 @@ namespace ppbox
             }
 
             void update_status(
-                ppbox::data::StreamStatus & status)
+                StreamStatus & status)
             {
                 boost::system::error_code ec;
                 demuxer_->get_stream_status(status, ec);

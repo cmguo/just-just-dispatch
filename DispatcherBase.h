@@ -43,11 +43,15 @@ namespace ppbox
                 boost::system::error_code & ec) = 0;
 
             virtual bool get_media_info(
-                ppbox::data::MediaInfo & info, 
+                MediaInfo & info, 
+                boost::system::error_code & ec) = 0;
+
+            virtual bool get_stream_info(
+                std::vector<StreamInfo> & streams, 
                 boost::system::error_code & ec) = 0;
 
             virtual bool get_stream_status(
-                ppbox::data::StreamStatus & status, 
+                StreamStatus & status, 
                 boost::system::error_code & ec) = 0;
 
             virtual bool cancel(

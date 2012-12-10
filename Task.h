@@ -149,7 +149,7 @@ namespace ppbox
             }
 
             void update_status(
-                ppbox::data::StreamStatus & status)
+                StreamStatus & status)
             {
             }
 
@@ -208,6 +208,8 @@ namespace ppbox
 
                 if (task_info_.cancel)
                     ec = boost::asio::error::operation_aborted;
+
+                task.update_status(task_info_.status);
 
                 if (seek_resp_) {
                     response(seek_resp_, ec);

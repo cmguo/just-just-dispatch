@@ -65,12 +65,17 @@ namespace ppbox
 
             bool get_media_info(
                 boost::uint32_t sid,        // 会话ID
-                ppbox::data::MediaInfo & info, 
+                MediaInfo & info, 
+                boost::system::error_code & ec);
+
+            bool get_stream_info(
+                boost::uint32_t sid,        // 会话ID
+                std::vector<StreamInfo> & streams, 
                 boost::system::error_code & ec);
 
             bool get_stream_status(
                 boost::uint32_t sid,        // 会话ID
-                ppbox::data::StreamStatus & info, 
+                StreamStatus & info, 
                 boost::system::error_code & ec);
 
             bool cancel(

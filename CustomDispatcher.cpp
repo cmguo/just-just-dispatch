@@ -61,14 +61,21 @@ namespace ppbox
         }
 
         bool CustomDispatcher::get_media_info(
-            ppbox::data::MediaInfo & info, 
+            MediaInfo & info, 
             boost::system::error_code & ec)
         {
             return dispatcher_.get_media_info(info, ec);
         }
 
+        bool CustomDispatcher::get_stream_info(
+            std::vector<StreamInfo> & streams, 
+            boost::system::error_code & ec)
+        {
+            return dispatcher_.get_stream_info(streams, ec);
+        }
+
         bool CustomDispatcher::get_stream_status(
-            ppbox::data::StreamStatus & info, 
+            StreamStatus & info, 
             boost::system::error_code & ec)
         {
             return dispatcher_.get_stream_status(info, ec);

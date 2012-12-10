@@ -138,7 +138,7 @@ namespace ppbox
         }
 
         bool MergeDispatcher::get_media_info(
-            ppbox::data::MediaInfo & info, 
+            MediaInfo & info, 
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[get_media_info]");
@@ -147,8 +147,18 @@ namespace ppbox
             return true;
         }
 
+        bool MergeDispatcher::get_stream_info(
+            std::vector<StreamInfo> & streams, 
+            boost::system::error_code & ec)
+        {
+            LOG_DEBUG("[get_stream_info]");
+            merger_->stream_info(streams);
+            ec.clear();
+            return true;
+        }
+
         void MergeDispatcher::do_get_stream_status(
-            ppbox::data::StreamStatus & info, 
+            StreamStatus & info, 
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[do_get_stream_status]");

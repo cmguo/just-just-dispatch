@@ -144,7 +144,7 @@ namespace ppbox
         }
 
         bool MuxDispatcher::get_media_info(
-            ppbox::data::MediaInfo & info, 
+            MediaInfo & info, 
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[get_media_info]");
@@ -153,8 +153,18 @@ namespace ppbox
             return true;
         }
 
+        bool MuxDispatcher::get_stream_info(
+            std::vector<StreamInfo> & streams, 
+            boost::system::error_code & ec)
+        {
+            LOG_DEBUG("[get_stream_info]");
+            muxer_->stream_info(streams);
+            ec.clear();
+            return true;
+        }
+
         void MuxDispatcher::do_get_stream_status(
-            ppbox::data::StreamStatus & info, 
+            StreamStatus & info, 
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[do_get_stream_status]");

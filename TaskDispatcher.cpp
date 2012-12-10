@@ -149,7 +149,7 @@ namespace ppbox
         }
 
         bool TaskDispatcher::get_stream_status(
-            ppbox::data::StreamStatus & status, 
+            StreamStatus & status, 
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[get_stream_status]");

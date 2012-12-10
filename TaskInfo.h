@@ -21,7 +21,7 @@ namespace ppbox
             }
 
             boost::asio::io_service & io_svc;
-            ppbox::data::StreamStatus status;
+            StreamStatus status;
         };
 
     } // namespace dispatch

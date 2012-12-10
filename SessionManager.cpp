@@ -238,7 +238,7 @@ namespace ppbox
 
         bool SessionManager::get_media_info(
             boost::uint32_t sid, 
-            ppbox::data::MediaInfo & info, 
+            MediaInfo & info, 
             boost::system::error_code & ec)
         {
             LOG_XXX("get_media_info");
@@ -251,9 +251,24 @@ namespace ppbox
             return false;
         }
 
+        bool SessionManager::get_stream_info(
+            boost::uint32_t sid, 
+            std::vector<StreamInfo> & streams, 
+            boost::system::error_code & ec)
+        {
+            LOG_XXX("get_stream_info");
+
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
+            if (ses) {
+                return current_->dispatcher().get_stream_info(streams, ec);
+            }
+            return false;
+        }
+
         bool SessionManager::get_stream_status(
             boost::uint32_t sid, 
-            ppbox::data::StreamStatus & status, 
+            StreamStatus & status, 
             boost::system::error_code & ec)
         {
             LOG_XXX("get_stream_status");
