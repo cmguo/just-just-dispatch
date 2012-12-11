@@ -46,6 +46,7 @@ namespace ppbox
             LOG_DEBUG("[start_open] playlink:"<< url.param(param_playlink) << " format:" << url.param(param_format));
             demuxer_module_.async_open(
                 framework::string::Url(url.param(param_playlink)), 
+                url, 
                 demux_close_token_, 
                 boost::bind(&MuxDispatcher::handle_open, this, url, _1, _2));
         }
@@ -60,21 +61,7 @@ namespace ppbox
             boost::system::error_code ec1 = ec;
             if (!ec1) {
                 format_ = url.param(param_format);
-                open_muxer(ec1);
-                if (muxer_) {
-                    framework::string::Url::param_const_iterator iter = url.param_begin();
-                    for (; iter != url.param_end(); ++iter) {
-                        if (iter->key().compare(0, 4, "mux.") == 0) {
-                            std::string::size_type pos_dot = iter->key().rfind('.');
-                            if (pos_dot == 3)
-                                continue;
-                            muxer_->config().set(
-                                iter->key().substr(4, pos_dot - 4), 
-                                iter->key().substr(pos_dot + 1), 
-                                iter->value());
-                        }
-                    }
-                }
+                open_muxer(url, ec1);
             }
             response(ec1);
         }
@@ -188,7 +175,7 @@ namespace ppbox
             if (format_ != format) {
                 close_muxer(ec);
                 format_ = format;
-                open_muxer(ec);
+                open_muxer(url, ec);
             }
             if (!ec) {
                 muxer_->reset(ec);
@@ -199,12 +186,13 @@ namespace ppbox
         }
 
         void MuxDispatcher::open_muxer(
+            framework::string::Url const & config, 
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[open_muxer]");
             muxer_ = muxer_module_.open(
                 demuxer_, 
-                format_, 
+                config, 
                 ec);
         }
 

@@ -6,6 +6,8 @@
 #include "ppbox/dispatch/SharedDispatcher.h"
 #include "ppbox/dispatch/SingleDispatcher.h"
 
+#include <ppbox/common/UrlHelper.h>
+
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
 
@@ -75,6 +77,11 @@ namespace ppbox
             framework::string::Url & url, 
             boost::system::error_code & ec)
         {
+            ppbox::common::decode_url(url, ec);
+            if (ec) {
+                return false;
+            }
+
             std::string::size_type pos = url.path().find('.');
             if (pos != std::string::npos) {
                 if (url.param(param_format).empty()) {

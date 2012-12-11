@@ -86,6 +86,7 @@ namespace ppbox
                 boost::system::error_code const & ec);
 
             void open_muxer(
+                framework::string::Url const & config, 
                 boost::system::error_code & ec);
 
             void close_muxer(
