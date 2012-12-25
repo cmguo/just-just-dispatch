@@ -77,7 +77,7 @@ namespace ppbox
             boost::uint64_t check_seek(
                 boost::system::error_code & ec)
             {
-                return demuxer_->check_seek(ec);
+                return muxer_->check_seek(ec);
             }
 
             void update_status(
