@@ -26,14 +26,20 @@ namespace ppbox
         public:
             WrapSink(
                 util::stream::Sink & sink)
-                : sink_(sink)
+                : sink_(&sink)
             {
             }
 
         public:
             util::stream::Sink & sink() const
             {
-                return sink_;
+                return *sink_;
+            }
+
+            void sink(
+                util::stream::Sink & sink)
+            {
+                sink_ = &sink;
             }
 
         public:
@@ -41,11 +47,11 @@ namespace ppbox
                 Sample const & sample, 
                 boost::system::error_code & ec)
             {
-                return sink_.write_some(sample.data, ec);
+                return sink_->write_some(sample.data, ec);
             }
 
         private:
-            util::stream::Sink & sink_;
+            util::stream::Sink * sink_;
         };
 
     } // namespace dispatch
