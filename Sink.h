@@ -57,4 +57,4 @@ namespace ppbox
     } // namespace dispatch
 } // namespace ppbox
 
-#endif // _PPBOX_DISPATCH_SINK_GROUP_H_
+#endif // _PPBOX_DISPATCH_SINK_SINK_H_

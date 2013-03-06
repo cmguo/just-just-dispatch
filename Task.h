@@ -212,11 +212,11 @@ namespace ppbox
                 task.update_status(task_info_.status);
 
                 if (seek_resp_) {
+                    task_info_.pause = true;
                     response(seek_resp_, ec);
                     seek_resp_.clear();
 
                     if (!ec) {
-                        task_info_.pause = true;
                         while (task_info_.pause) {
                             task.sleep();
                         }
