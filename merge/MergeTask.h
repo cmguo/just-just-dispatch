@@ -46,6 +46,13 @@ namespace ppbox
                 return !ec;
             }
 
+            bool free_sample(
+                ppbox::avformat::Sample & sample, 
+                boost::system::error_code & ec)
+            {
+                return merger_->free(sample, ec);
+            }
+
             bool buffer(
                 boost::system::error_code & ec)
             {

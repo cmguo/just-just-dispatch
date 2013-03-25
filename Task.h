@@ -60,6 +60,13 @@ namespace ppbox
                 return false;
             }
 
+            bool free_sample(
+                ppbox::avformat::Sample & sample, 
+                boost::system::error_code & ec)
+            {
+                return false;
+            }
+
             bool buffer(
                 boost::system::error_code & ec)
             {
@@ -249,6 +256,11 @@ namespace ppbox
                     } else {
                         break;
                     }
+                }
+
+                {
+                    boost::system::error_code ec1;
+                    task.free_sample(sample_, ec1);
                 }
 
                 if (task_info_.cancel)

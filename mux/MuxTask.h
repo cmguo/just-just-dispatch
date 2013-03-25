@@ -47,8 +47,14 @@ namespace ppbox
                 ppbox::avformat::Sample & sample, 
                 boost::system::error_code & ec)
             {
-                muxer_->read(sample, ec);
-                return !ec;
+                return muxer_->read(sample, ec);
+            }
+
+            bool free_sample(
+                ppbox::avformat::Sample & sample, 
+                boost::system::error_code & ec)
+            {
+                return demuxer_->free_sample(sample, ec);
             }
 
             bool buffer(

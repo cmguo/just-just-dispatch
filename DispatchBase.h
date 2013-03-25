@@ -5,7 +5,8 @@
 
 #include <ppbox/data/base/MediaInfo.h>
 #include <ppbox/data/base/StreamStatus.h>
-#include <ppbox/avformat/Format.h>
+#include <ppbox/avformat/Sample.h>
+#include <ppbox/avformat/StreamInfo.h>
 
 #include <framework/string/Url.h>
 
