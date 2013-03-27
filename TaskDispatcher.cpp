@@ -152,7 +152,7 @@ namespace ppbox
             StreamStatus & status, 
             boost::system::error_code & ec)
         {
-            LOG_DEBUG("[get_stream_status]");
+            LOG_TRACE("[get_stream_status]");
 
             if (async_type_ == none) {
                 do_get_stream_status(status, ec);

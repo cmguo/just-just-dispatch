@@ -271,7 +271,7 @@ namespace ppbox
             StreamStatus & status, 
             boost::system::error_code & ec)
         {
-            LOG_XXX("get_stream_status");
+            LOG_TRACE("[get_stream_status] sid: " << sid << " current:" << current_ << " next:" << next_);
 
             Session * main_ses = NULL;
             Session * ses = user_session(sid, main_ses, ec);

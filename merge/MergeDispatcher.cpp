@@ -161,7 +161,7 @@ namespace ppbox
             StreamStatus & info, 
             boost::system::error_code & ec)
         {
-            LOG_DEBUG("[do_get_stream_status]");
+            LOG_TRACE("[do_get_stream_status]");
             merger_->stream_status(info);
             ec.clear();
         }
