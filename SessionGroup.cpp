@@ -253,7 +253,7 @@ namespace ppbox
                 return ses;
             }
             for (size_t i = 0; i < kick_outs_.size(); ++i) {
-                if (ses = kick_outs_[i]->find_sub2(id)) {
+                if ((ses = kick_outs_[i]->find_sub2(id))) {
                     main_ses = kick_outs_[i];
                     return ses;
                 }
