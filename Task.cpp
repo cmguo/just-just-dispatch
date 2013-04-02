@@ -52,8 +52,9 @@ namespace ppbox
         {
             framework::timer::Time send_time = start_time_ 
                 + framework::timer::Duration::milliseconds(sample.time);
-            if (send_time > framework::timer::Time::now()) {
-                sleep();
+            framework::timer::Time now;
+            if (send_time > now) {
+                boost::this_thread::sleep((send_time - now).to_posix_duration());
             }
         }
 

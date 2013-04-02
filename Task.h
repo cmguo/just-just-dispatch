@@ -213,6 +213,8 @@ namespace ppbox
                     range_.beg = task.check_seek(ec);
                 }
 
+                reset_time(range_.beg);
+
                 if (task_info_.cancel)
                     ec = boost::asio::error::operation_aborted;
 
@@ -234,8 +236,6 @@ namespace ppbox
                     response(resp_, ec);
                     return;
                 }
-
-                reset_time(range_.beg);
 
                 while (!task_info_.cancel) {
                     if (task_info_.pause) {
