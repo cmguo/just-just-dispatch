@@ -1,10 +1,8 @@
 // TaskDispatcher.h
 
 #include "ppbox/dispatch/Common.h"
-#define PPBOX_ENABLE_REGISTER_CLASS
 #include "ppbox/dispatch/TaskDispatcher.h"
-#include "ppbox/dispatch/mux/MuxDispatcher.h"
-#include "ppbox/dispatch/merge/MergeDispatcher.h"
+#include "ppbox/dispatch/DispatcherTypes.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
