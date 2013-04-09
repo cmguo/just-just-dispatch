@@ -45,7 +45,7 @@ namespace ppbox
             virtual bool accept(
                 framework::string::Url const & url);
 
-            virtual bool assign(
+            virtual bool switch_to(
                 framework::string::Url const & url, 
                 boost::system::error_code & ec);
 

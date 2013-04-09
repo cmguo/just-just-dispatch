@@ -125,12 +125,13 @@ namespace ppbox
             return true;
         }
 
-        bool TaskDispatcher::assign(
+        bool TaskDispatcher::switch_to(
             framework::string::Url const & url, 
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[assign]");
             task_info_.fast = url.param("dispatch.fast") == "true";
+            sink_group_.clear();
             ec.clear();
             return true;
         }

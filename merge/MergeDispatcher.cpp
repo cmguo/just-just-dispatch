@@ -173,11 +173,11 @@ namespace ppbox
             return url.param(param_format) == "mp4";
         }
 
-        bool MergeDispatcher::assign(
+        bool MergeDispatcher::switch_to(
             framework::string::Url const & url, 
             boost::system::error_code & ec)
         {
-            TaskDispatcher::assign(url, ec);
+            TaskDispatcher::switch_to(url, ec);
             std::string format = url.param(param_format);
             if (format_ != format) {
                 ec = ppbox::merge::error::format_not_match;

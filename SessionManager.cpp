@@ -470,7 +470,7 @@ namespace ppbox
                     boost::bind(&SessionManager::handle_request, this, _1));
             } else if (req == SessionGroup::switch_request) {
                 boost::system::error_code ec;
-                current_->dispatcher().assign(current_->current()->url(), ec);
+                current_->dispatcher().switch_to(current_->current()->url(), ec);
                 handle_request(ec);
             } else if (req == Session::setup_request) {
                 boost::system::error_code ec;

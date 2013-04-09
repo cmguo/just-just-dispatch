@@ -20,6 +20,8 @@ namespace ppbox
                 boost::uint32_t index, 
                 Sink & sink);
 
+            void clear();
+
             bool write(
                 Sample & sample, 
                 boost::system::error_code & ec);

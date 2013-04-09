@@ -28,6 +28,12 @@ namespace ppbox
             }
         }
 
+        void SinkGroup::clear()
+        {
+            sinks_.clear();
+            default_sink_ = &drop_sink_;
+        }
+
         bool SinkGroup::write(
             Sample & sample, 
             boost::system::error_code & ec)

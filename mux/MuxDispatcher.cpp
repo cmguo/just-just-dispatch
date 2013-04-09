@@ -165,11 +165,11 @@ namespace ppbox
             return true;
         }
 
-        bool MuxDispatcher::assign(
+        bool MuxDispatcher::switch_to(
             framework::string::Url const & url, 
             boost::system::error_code & ec)
         {
-            TaskDispatcher::assign(url, ec);
+            TaskDispatcher::switch_to(url, ec);
             std::string format = url.param(param_format);
             LOG_DEBUG("[assign] format:" << format);
             if (format_ != format) {
