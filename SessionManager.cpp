@@ -75,6 +75,10 @@ namespace ppbox
                 }
                 std::map<std::string, Session *>::iterator iter = named_sessions_.find(session);
                 if (iter == named_sessions_.end()) {
+                    if (to_close) {
+                        io_svc_.post(boost::bind(resp, error::session_not_found));
+                        return;
+                    }
                     // 先通过下面创建主会话，再继续创建从会话
                 } else {
                     main_ses = iter->second;
