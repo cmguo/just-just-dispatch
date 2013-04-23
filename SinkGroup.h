@@ -3,6 +3,7 @@
 #ifndef _PPBOX_DISPATCH_SINK_GROUP_H_
 #define _PPBOX_DISPATCH_SINK_GROUP_H_
 
+#include "ppbox/dispatch/DispatchBase.h"
 #include "ppbox/dispatch/DropSink.h"
 
 namespace ppbox
@@ -18,7 +19,7 @@ namespace ppbox
         public:
             void setup(
                 boost::uint32_t index, 
-                Sink & sink);
+                util::stream::Sink & sink);
 
             void clear();
 
@@ -47,8 +48,8 @@ namespace ppbox
             static DropSink drop_sink_;
 
         private:
-            std::vector<Sink *> sinks_;
-            Sink * default_sink_;
+            std::vector<util::stream::Sink *> sinks_;
+            util::stream::Sink * default_sink_;
         };
 
     } // namespace dispatch

@@ -12,6 +12,14 @@
 
 #include <boost/function.hpp>
 
+namespace util
+{
+    namespace stream
+    {
+        class Sink;
+    }
+}
+
 namespace ppbox
 {
     namespace dispatch
@@ -26,7 +34,6 @@ namespace ppbox
             boost::system::error_code const &)> response_t;
 
         class DispatcherBase;
-        class Sink;
 
         static char const * const param_playlink = "playlink";
         static char const * const param_format = "format";

@@ -17,7 +17,7 @@ namespace ppbox
 
         void SinkGroup::setup(
             boost::uint32_t index, 
-            Sink & sink)
+            util::stream::Sink & sink)
         {
             if (index == (boost::uint32_t)-1) {
                 default_sink_ = &sink;
@@ -42,9 +42,9 @@ namespace ppbox
 
             size_t n = 0;
             if (sample.itrack < sinks_.size()) {
-                n = sinks_[sample.itrack]->write(sample, ec);
+                n = sinks_[sample.itrack]->write_some(sample.data, ec);
             } else {
-                n = default_sink_->write(sample, ec);
+                n = default_sink_->write_some(sample.data, ec);
             }
             if (n == sample.size) {
                 sample.data.clear();

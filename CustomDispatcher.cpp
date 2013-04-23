@@ -28,7 +28,7 @@ namespace ppbox
 
         bool CustomDispatcher::setup(
             boost::uint32_t index, 
-            Sink & sink, 
+            util::stream::Sink & sink, 
             boost::system::error_code & ec)
         {
             return dispatcher_.setup(index, sink, ec);

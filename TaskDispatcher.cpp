@@ -60,7 +60,7 @@ namespace ppbox
 
         bool TaskDispatcher::setup(
             boost::uint32_t index, 
-            Sink & sink, 
+            util::stream::Sink & sink, 
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[setup]");

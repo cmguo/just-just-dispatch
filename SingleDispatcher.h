@@ -29,7 +29,7 @@ namespace ppbox
 
             virtual bool setup(
                 boost::uint32_t index,      // Á÷±àºÅ
-                Sink & sink, 
+                util::stream::Sink & sink, 
                 boost::system::error_code & ec); 
 
             virtual void async_play(

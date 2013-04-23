@@ -3,7 +3,7 @@
 #ifndef _PPBOX_DISPATCH_DROP_SINK_H_
 #define _PPBOX_DISPATCH_DROP_SINK_H_
 
-#include "ppbox/dispatch/Sink.h"
+#include <util/stream/Sink.h>
 
 namespace ppbox
 {
@@ -11,14 +11,14 @@ namespace ppbox
     {
 
         class DropSink 
-            : public ppbox::dispatch::Sink
+            : public util::stream::Sink
         {
         public:
             DropSink();
 
         private:
             virtual size_t write(
-                Sample const & sample, 
+                buffers_t const & buffers, 
                 boost::system::error_code & ec);
         };
 

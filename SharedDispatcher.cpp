@@ -36,7 +36,7 @@ namespace ppbox
 
         bool SharedDispatcher::setup(
             boost::uint32_t index, 
-            Sink & sink, 
+            util::stream::Sink & sink, 
             boost::system::error_code & ec)
         {
             return manager_.setup(session_id_, index, sink, ec);
