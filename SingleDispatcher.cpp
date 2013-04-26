@@ -114,6 +114,10 @@ namespace ppbox
         bool SingleDispatcher::close(
             boost::system::error_code & ec)
         {
+            if (dispatcher_ == NULL) {
+                ec = error::session_not_open;
+                return false;
+            }
             return dispatcher_->close(ec);
         }
 
