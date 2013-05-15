@@ -5,8 +5,9 @@
 
 #include <ppbox/data/base/MediaInfo.h>
 #include <ppbox/data/base/StreamStatus.h>
-#include <ppbox/avformat/Sample.h>
-#include <ppbox/avformat/StreamInfo.h>
+
+#include <ppbox/avbase/Sample.h>
+#include <ppbox/avbase/StreamInfo.h>
 
 #include <framework/string/Url.h>
 
@@ -27,8 +28,8 @@ namespace ppbox
 
         using ppbox::data::MediaInfo;
         using ppbox::data::StreamStatus;
-        using ppbox::avformat::Sample;
-        using ppbox::avformat::StreamInfo;
+        using ppbox::avbase::Sample;
+        using ppbox::avbase::StreamInfo;
 
         typedef boost::function<void (
             boost::system::error_code const &)> response_t;

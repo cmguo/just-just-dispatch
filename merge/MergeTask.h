@@ -39,7 +39,7 @@ namespace ppbox
             }
 
             bool read_sample(
-                ppbox::avformat::Sample & sample, 
+                Sample & sample, 
                 boost::system::error_code & ec)
             {
                 merger_->read(sample, ec);
@@ -47,7 +47,7 @@ namespace ppbox
             }
 
             bool free_sample(
-                ppbox::avformat::Sample & sample, 
+                Sample & sample, 
                 boost::system::error_code & ec)
             {
                 return merger_->free(sample, ec);

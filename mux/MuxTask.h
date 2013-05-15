@@ -44,14 +44,14 @@ namespace ppbox
             }
 
             bool read_sample(
-                ppbox::avformat::Sample & sample, 
+                Sample & sample, 
                 boost::system::error_code & ec)
             {
                 return muxer_->read(sample, ec);
             }
 
             bool free_sample(
-                ppbox::avformat::Sample & sample, 
+                Sample & sample, 
                 boost::system::error_code & ec)
             {
                 return demuxer_->free_sample(sample, ec);

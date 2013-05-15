@@ -7,8 +7,6 @@
 #include "ppbox/dispatch/DispatchBase.h"
 #include "ppbox/dispatch/SinkGroup.h"
 
-#include <ppbox/avformat/Format.h>
-
 #include <framework/timer/ClockTime.h>
 
 namespace ppbox
@@ -54,14 +52,14 @@ namespace ppbox
             }
 
             bool read_sample(
-                ppbox::avformat::Sample & sample, 
+                Sample & sample, 
                 boost::system::error_code & ec)
             {
                 return false;
             }
 
             bool free_sample(
-                ppbox::avformat::Sample & sample, 
+                Sample & sample, 
                 boost::system::error_code & ec)
             {
                 return false;
@@ -81,7 +79,7 @@ namespace ppbox
             }
 
             bool write_sample(
-                ppbox::avformat::Sample & sample, 
+                Sample & sample, 
                 boost::system::error_code & ec) const;
 
             bool write_continuable(
@@ -91,7 +89,7 @@ namespace ppbox
             }
 
             void check_speed(
-                ppbox::avformat::Sample const & sample) const;
+                Sample const & sample) const;
 
             void reset_time(
                 boost::uint64_t time);
@@ -109,7 +107,7 @@ namespace ppbox
             SeekRange range_;
             response_t seek_resp_;
             response_t resp_;
-            ppbox::avformat::Sample sample_;
+            Sample sample_;
             bool buffer_finish_;
             framework::timer::Time start_time_;
         };
@@ -162,7 +160,7 @@ namespace ppbox
 
             bool write_sample_hard(
                 TaskImpl & task, 
-                ppbox::avformat::Sample & sample, 
+                Sample & sample, 
                 boost::system::error_code & ec)
             {
                 if (task.write_sample(sample, ec)) {

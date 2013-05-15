@@ -41,14 +41,14 @@ namespace ppbox
         }
 
         bool TaskBase::write_sample(
-            ppbox::avformat::Sample & sample, 
+            Sample & sample, 
             boost::system::error_code & ec) const
         {
             return sinks_.write(sample, ec);
         }
 
         void TaskBase::check_speed(
-            ppbox::avformat::Sample const & sample) const
+            Sample const & sample) const
         {
             framework::timer::Time send_time = start_time_ 
                 + framework::timer::Duration::milliseconds(sample.time);
