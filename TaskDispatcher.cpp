@@ -3,6 +3,7 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/TaskDispatcher.h"
 #include "ppbox/dispatch/DispatcherTypes.h"
+#include "ppbox/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -52,6 +53,13 @@ namespace ppbox
             LOG_DEBUG("[async_open]");
 
             assert(async_type_ == none);
+
+            if (!url.is_valid()) {
+                io_svc().post(
+                    boost::bind(resp, error::invalid_url));
+                return;
+            }
+
             async_type_ = open;
             resp_ = resp;
             task_info_.fast = url.param("dispatch.fast") == "true";

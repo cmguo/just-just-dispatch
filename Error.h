@@ -13,6 +13,7 @@ namespace ppbox
             enum errors
             {
                 not_support = 1,
+                invalid_url, 
                 session_not_found, 
                 session_not_open, 
                 session_kick_out, 
@@ -40,6 +41,8 @@ namespace ppbox
                         switch (value) {
                             case not_support:
                                 return "dispatch: not support";
+                            case invalid_url:
+                                return "dispatch: invalid url";
                             case session_not_found:
                                 return "dispatch: session not found";
                             case session_not_open:
