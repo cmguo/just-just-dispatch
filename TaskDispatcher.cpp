@@ -50,7 +50,7 @@ namespace ppbox
             framework::string::Url const & url, 
             response_t const & resp)
         {
-            LOG_DEBUG("[async_open]");
+            LOG_DEBUG("[async_open] url: " << url.to_string());
 
             assert(async_type_ == none);
 
