@@ -87,7 +87,6 @@ namespace ppbox
                 if (url.param(param_format).empty()) {
                     url.param(param_format, url.path().substr(pos + 1));
                 }
-                url.path(url.path().substr(0, pos));
             }
             if (url.param(param_format).empty()) {
                 ec = framework::system::logic_error::invalid_argument;
