@@ -30,7 +30,6 @@ namespace ppbox
             : TaskDispatcher(io_svc, dispatch_io_svc)
             , demuxer_module_(util::daemon::use_module<ppbox::demux::DemuxModule>(io_svc))
             , muxer_module_(util::daemon::use_module<ppbox::mux::MuxModule>(io_svc))
-            , demux_close_token_(0)
             , demuxer_(NULL)
             , muxer_(NULL)
         {
@@ -43,21 +42,25 @@ namespace ppbox
         void MuxDispatcher::start_open(
             framework::string::Url const & url)
         {
-            LOG_DEBUG("[start_open] playlink:"<< url.param(param_playlink) << " format:" << url.param(param_format));
-            demuxer_module_.async_open(
+            LOG_DEBUG("[start_open] playlink:" << url.param(param_playlink) << " format:" << url.param(param_format));
+            boost::system::error_code ec;
+            demuxer_ = demuxer_module_.create(
                 framework::string::Url(url.param(param_playlink)), 
                 url, 
-                demux_close_token_, 
-                boost::bind(&MuxDispatcher::handle_open, this, url, _1, _2));
+                ec);
+            if (demuxer_) {
+                demuxer_->async_open(
+                    boost::bind(&MuxDispatcher::handle_open, this, url, _1));
+            } else {
+                post_response(ec);
+            }
         }
 
         void MuxDispatcher::handle_open(
             framework::string::Url const & url, 
-            boost::system::error_code const & ec,
-            ppbox::demux::DemuxerBase * demuxer)
+            boost::system::error_code const & ec)
         {
             LOG_DEBUG("[handle_open] ec:" << ec.message());
-            demuxer_ = demuxer;
             boost::system::error_code ec1 = ec;
             if (!ec1) {
                 format_ = url.param(param_format);
@@ -70,9 +73,7 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[cancel_open]");
-            demuxer_module_.close(demux_close_token_,ec);
-            demux_close_token_ = 0;
-            demuxer_ = NULL;
+            demuxer_->cancel(ec);
         }
 
         void MuxDispatcher::do_setup(
@@ -123,9 +124,9 @@ namespace ppbox
         {
             LOG_DEBUG("[do_close]");
             close_muxer(ec);
-            if (demux_close_token_) {
-                demuxer_module_.close(demux_close_token_, ec);
-                demux_close_token_ = 0;
+            if (demuxer_) {
+                demuxer_->close(ec);
+                demuxer_module_.destroy(demuxer_, ec);
                 demuxer_ = NULL;
             }
         }
@@ -201,7 +202,7 @@ namespace ppbox
         {
             LOG_DEBUG("[close_muxer]");
             if (muxer_) {
-                muxer_module_.close(muxer_,ec);
+                muxer_module_.close(muxer_, ec);
                 muxer_ = NULL;
             }
             ec.clear();

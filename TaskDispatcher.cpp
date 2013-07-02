@@ -245,6 +245,18 @@ namespace ppbox
             return !(ec);
         }
 
+        void TaskDispatcher::post_response(
+            boost::system::error_code const & ec)
+        {
+            assert(async_type_ != none);
+            task_info_.cancel = false;
+            task_info_.pause = false;
+            async_type_ = none;
+            io_svc().post(
+                boost::bind(resp_, error::invalid_url));
+            resp_.clear();
+        }
+
         void TaskDispatcher::response(
             boost::system::error_code const & ec)
         {

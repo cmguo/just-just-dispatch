@@ -86,6 +86,9 @@ namespace ppbox
                 boost::system::error_code & ec); 
 
         protected:
+            void post_response(
+                boost::system::error_code const & ec);
+
             void response(
                 boost::system::error_code const & ec);
 

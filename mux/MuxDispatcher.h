@@ -76,8 +76,7 @@ namespace ppbox
        private:
             void handle_open(
                 framework::string::Url const & url, 
-                boost::system::error_code const & ec, 
-                ppbox::demux::DemuxerBase * demuxer);
+                boost::system::error_code const & ec);
 
             void handle_play(
                 boost::system::error_code const & ec);
@@ -96,7 +95,6 @@ namespace ppbox
             ppbox::demux::DemuxModule & demuxer_module_;
             ppbox::mux::MuxModule & muxer_module_;
 
-            size_t  demux_close_token_;
             ppbox::demux::DemuxerBase* demuxer_;
             ppbox::mux::MuxerBase *muxer_;
 
