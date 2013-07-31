@@ -70,9 +70,7 @@ namespace ppbox
 
        private:
             void handle_open(
-                framework::string::Url const & url, 
-                boost::system::error_code const & ec, 
-                ppbox::merge::MergerBase * merger);
+                boost::system::error_code const & ec);
 
             void handle_play(
                 boost::system::error_code const & ec);

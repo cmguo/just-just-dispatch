@@ -41,45 +41,30 @@ namespace ppbox
             framework::string::Url const & url)
         {
             LOG_DEBUG("[start_open] playlink:"<< url.param(param_playlink));
-            merge_module_.async_open(
+            boost::system::error_code ec;
+            merger_ = merge_module_.create(
                 framework::string::Url(url.param(param_playlink)), 
-                merge_close_token_, 
-                boost::bind(&MergeDispatcher::handle_open, this, url, _1, _2));
+                url, ec);
+            if (merger_) {
+                merger_->async_open(
+                    boost::bind(&MergeDispatcher::handle_open, this, _1));
+            } else {
+                post_response(ec);
+            }
         }
 
         void MergeDispatcher::handle_open(
-            framework::string::Url const & url, 
-            boost::system::error_code const & ec, 
-            ppbox::merge::MergerBase * merger)
+            boost::system::error_code const & ec)
         {
             LOG_DEBUG("[handle_open] ec:" << ec.message());
-            merger_ = merger;
-            boost::system::error_code ec1 = ec;
-            if (!ec1) {
-                format_ = url.param(param_format);
-                framework::string::Url::param_const_iterator iter = url.param_begin();
-                for (; iter != url.param_end(); ++iter) {
-                    if (iter->key().compare(0, 6, "merge.") == 0) {
-                        std::string::size_type pos_dot = iter->key().rfind('.');
-                        if (pos_dot == 5)
-                            continue;
-                        merger_->config().set(
-                            iter->key().substr(6, pos_dot - 6), 
-                            iter->key().substr(pos_dot + 1), 
-                            iter->value());
-                    }
-                }
-            }
-            response(ec1);
+            response(ec);
         }
 
         void MergeDispatcher::cancel_open(
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[cancel_open]");
-            merge_module_.close(merge_close_token_,ec);
-            merge_close_token_ = 0;
-            merger_ = NULL;
+            merger_->cancel(ec);
         }
 
         void MergeDispatcher::do_setup(
@@ -130,9 +115,9 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             LOG_DEBUG("[do_close]");
-            if (merge_close_token_) {
-                merge_module_.close(merge_close_token_, ec);
-                merge_close_token_ = 0;
+            if (merger_) {
+                merger_->close(ec);
+                merge_module_.destroy(merger_, ec);
                 merger_ = NULL;
             }
         }
