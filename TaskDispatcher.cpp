@@ -253,7 +253,7 @@ namespace ppbox
             task_info_.pause = false;
             async_type_ = none;
             io_svc().post(
-                boost::bind(resp_, error::invalid_url));
+                boost::bind(resp_, ec));
             resp_.clear();
         }
 

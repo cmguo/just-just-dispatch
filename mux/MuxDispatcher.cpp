@@ -173,7 +173,7 @@ namespace ppbox
             TaskDispatcher::switch_to(url, ec);
             std::string format = url.param(param_format);
             LOG_DEBUG("[assign] format:" << format);
-            if (format_ != format) {
+            if (!ec && format_ != format) {
                 close_muxer(ec);
                 format_ = format;
                 open_muxer(url, ec);

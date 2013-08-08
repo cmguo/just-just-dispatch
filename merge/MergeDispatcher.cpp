@@ -40,7 +40,8 @@ namespace ppbox
         void MergeDispatcher::start_open(
             framework::string::Url const & url)
         {
-            LOG_DEBUG("[start_open] playlink:"<< url.param(param_playlink));
+            LOG_DEBUG("[start_open] playlink:" << url.param(param_playlink));
+            format_ = url.param(param_format);
             boost::system::error_code ec;
             merger_ = merge_module_.create(
                 framework::string::Url(url.param(param_playlink)), 
@@ -166,11 +167,6 @@ namespace ppbox
             std::string format = url.param(param_format);
             if (format_ != format) {
                 ec = ppbox::merge::error::format_not_match;
-            }
-            if (!ec) {
-                merger_->reset(ec);
-                if (ec == boost::asio::error::would_block)
-                    ec.clear();
             }
             return !ec;
         }
