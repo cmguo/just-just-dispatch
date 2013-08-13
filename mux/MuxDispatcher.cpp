@@ -98,7 +98,7 @@ namespace ppbox
         {
             LOG_DEBUG("[handle_play] ec:" << ec.message());
             boost::system::error_code ec1 = ec;
-            if (ec1 == ppbox::mux::error::end_of_stream) {
+            if (ec1 == ppbox::avformat::error::end_of_stream) {
                 ec1.clear();
             }
             response(ec1);
