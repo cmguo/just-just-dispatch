@@ -56,8 +56,7 @@ namespace ppbox
             bool buffer(
                 boost::system::error_code & ec)
             {
-                boost::system::error_code ec1;
-                merger_->get_buffer_time(ec1, ec);
+                merger_->fill_data(ec);
                 return !ec;
             }
 
@@ -80,8 +79,7 @@ namespace ppbox
             boost::uint64_t check_seek(
                 boost::system::error_code & ec)
             {
-                boost::system::error_code ec_buf;
-                merger_->get_buffer_time(ec, ec_buf);
+                ec.clear();
                 return 0;
             }
 
