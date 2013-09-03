@@ -83,6 +83,12 @@ namespace ppbox
                 return 0;
             }
 
+            void update_status(
+                StreamStatus & status)
+            {
+                merger_->stream_status(status);
+            }
+
         private:
             ppbox::merge::MergerBase * merger_;
         };
