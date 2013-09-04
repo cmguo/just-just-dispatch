@@ -3,6 +3,8 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/DispatchModule.h"
 #include "ppbox/dispatch/SessionManager.h"
+#include "ppbox/dispatch/DispatchTask.h"
+#include "ppbox/dispatch/DispatchThread.h"
 #include "ppbox/dispatch/SharedDispatcher.h"
 #include "ppbox/dispatch/SingleDispatcher.h"
 
@@ -10,6 +12,8 @@
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
+
+#include <boost/bind.hpp>
 
 FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("DispatchModule", framework::logger::Debug);
 
@@ -26,6 +30,18 @@ namespace ppbox
 
         DispatchModule::~DispatchModule()
         {
+            for(size_t i = 0; i < dispatchers_.size() ; ++i) {
+                delete dispatchers_[i];
+            }
+            dispatchers_.clear();
+            for(size_t i = 0; i < managers_.size() ; ++i) {
+                delete managers_[i];
+            }
+            managers_.clear();
+            for(size_t i = 0; i < threads_.size() ; ++i) {
+                delete threads_[i];
+            }
+            threads_.clear();
         }
 
         boost::system::error_code DispatchModule::startup()
@@ -36,41 +52,6 @@ namespace ppbox
 
         void DispatchModule::shutdown()
         {
-            std::vector<SessionManager *>::iterator iter = managers_.begin();
-            for(; iter != managers_.end() ; ++iter) {
-                delete (*iter);
-            }
-        }
-
-        DispatcherBase * DispatchModule::alloc_dispatcher(
-            bool shared)
-        {
-            DispatcherBase * dispatcher = NULL;
-            if (shared) {
-                if (managers_.empty()) {
-                    managers_.push_back(new SessionManager(io_svc()));
-                }
-                SessionManager * manager = managers_[0];
-                dispatcher = new SharedDispatcher(*manager);
-            } else {
-                dispatcher = new SingleDispatcher(io_svc());
-            }
-            if (dispatcher) {
-                dispatchers_.push_back(dispatcher);
-            }
-            return dispatcher;
-        }
-
-        void DispatchModule::free_dispatcher(
-            DispatcherBase * dispatcher)
-        {
-            std::vector<DispatcherBase *>::iterator iter = 
-                std::find(dispatchers_.begin(), dispatchers_.end(), dispatcher);
-            assert(iter != dispatchers_.end());
-            if (iter != dispatchers_.end()) {
-                dispatchers_.erase(iter);
-                delete dispatcher;
-            }
         }
 
         bool DispatchModule::normalize_url(
@@ -92,6 +73,74 @@ namespace ppbox
                 ec = framework::system::logic_error::invalid_argument;
             }
             return !ec;
+        }
+
+        DispatcherBase * DispatchModule::alloc_dispatcher(
+            bool shared)
+        {
+            boost::mutex::scoped_lock lc(mutex_);
+            DispatcherBase * dispatcher = NULL;
+            if (shared) {
+                if (managers_.empty()) {
+                    managers_.push_back(new SessionManager(io_svc()));
+                }
+                SessionManager * manager = managers_[0];
+                dispatcher = new SharedDispatcher(*manager);
+            } else {
+                dispatcher = new SingleDispatcher(io_svc());
+            }
+            if (dispatcher) {
+                dispatchers_.push_back(dispatcher);
+            }
+            return dispatcher;
+        }
+
+        void DispatchModule::free_dispatcher(
+            DispatcherBase * dispatcher)
+        {
+            boost::mutex::scoped_lock lc(mutex_);
+            std::vector<DispatcherBase *>::iterator iter = 
+                std::find(dispatchers_.begin(), dispatchers_.end(), dispatcher);
+            assert(iter != dispatchers_.end());
+            if (iter != dispatchers_.end()) {
+                dispatchers_.erase(iter);
+                delete dispatcher;
+            }
+        }
+
+        static void do_task(
+            DispatchModule * module, 
+            DispatchThread * thread, 
+            DispathTaskBase * task)
+        {
+            task->perform();
+            module->free_thread(thread);
+        }
+
+        void DispatchModule::post_thread_task(
+            DispathTaskBase * task)
+        {
+            DispatchThread * thread = alloc_thread();
+            thread->post_task(
+                make_task(boost::bind(do_task, this, thread, task)));
+        }
+
+        DispatchThread * DispatchModule::alloc_thread()
+        {
+            boost::mutex::scoped_lock lc(mutex_);
+            if (threads_.empty()) {
+                return new DispatchThread;
+            }
+            DispatchThread * thread = threads_.back();
+            threads_.pop_back();
+            return thread;
+        }
+
+        void DispatchModule::free_thread(
+            DispatchThread * thread)
+        {
+            boost::mutex::scoped_lock lc(mutex_);
+            threads_.push_back(thread);
         }
 
     } // namespace dispatch

@@ -15,6 +15,7 @@ namespace ppbox
     {
 
         struct Request;
+        class DispatchModule;
 
         class TaskDispatcher
             : public DispatcherBase
@@ -22,20 +23,17 @@ namespace ppbox
                 TaskDispatcher, 
                 size_t, 
                 TaskDispatcher * (
-                    boost::asio::io_service &, 
                     boost::asio::io_service &)
             >
         {
         public:
             static TaskDispatcher * create(
                 boost::asio::io_service & io_svc, 
-                boost::asio::io_service & dispatch_io_svc, 
                 framework::string::Url const & url);
 
         public:
             TaskDispatcher(
-                boost::asio::io_service & io_svc, 
-                boost::asio::io_service & dispatch_io_svc);
+                boost::asio::io_service & io_svc);
 
             virtual ~TaskDispatcher();
 
@@ -92,9 +90,9 @@ namespace ppbox
             void response(
                 boost::system::error_code const & ec);
 
-            boost::asio::io_service & dispatch_io_svc()
+            DispatchModule & module()
             {
-                return dispatch_io_svc_;
+                return module_;
             }
 
             TaskInfo & task_info()
@@ -157,7 +155,7 @@ namespace ppbox
             };
 
         private:
-            boost::asio::io_service & dispatch_io_svc_;
+            DispatchModule & module_;
             TaskInfo task_info_;
             AsyncTypeEnum async_type_;
             response_t resp_;

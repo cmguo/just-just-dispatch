@@ -36,13 +36,13 @@ namespace ppbox
                 response_t const & seek_resp, 
                 response_t const & resp) = 0;
 
-            //virtual bool seek(
-            //    SeekRange const & range, 
-            //    boost::system::error_code & ec) = 0; 
+            virtual bool seek(
+                SeekRange & range, 
+                boost::system::error_code & ec) = 0;
 
-            //virtual bool read_sample(
-            //    Sample & sample, 
-            //    boost::system::error_code & ec) = 0; 
+            virtual bool read(
+                Sample & sample, 
+                boost::system::error_code & ec) = 0;
 
             virtual bool pause(
                 boost::system::error_code & ec) = 0;

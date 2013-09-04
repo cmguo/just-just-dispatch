@@ -17,6 +17,9 @@ namespace ppbox
         {
         public:
             CustomDispatcher(
+                boost::asio::io_service & io_svc);
+
+            CustomDispatcher(
                 DispatcherBase & dispatcher);
 
             virtual ~CustomDispatcher();
@@ -36,7 +39,12 @@ namespace ppbox
                 response_t const & seek_resp,
                 response_t const & resp);
 
-            virtual bool cancel(
+            virtual bool seek(
+                SeekRange & range, 
+                boost::system::error_code & ec);
+
+            virtual bool read(
+                Sample & sample, 
                 boost::system::error_code & ec);
 
             virtual bool pause(
@@ -45,9 +53,6 @@ namespace ppbox
             virtual bool resume(
                 boost::system::error_code & ec);
 
-            virtual bool close(
-                boost::system::error_code & ec);
-            
             virtual bool get_media_info(
                 MediaInfo & info, 
                 boost::system::error_code & ec);
@@ -60,8 +65,29 @@ namespace ppbox
                 StreamStatus & info, 
                 boost::system::error_code & ec);
 
-        protected:
-            DispatcherBase & dispatcher_;
+            virtual bool cancel(
+                boost::system::error_code & ec);
+
+            virtual bool close(
+                boost::system::error_code & ec);
+
+        public:
+            void attach(
+                DispatcherBase * dispatcher)
+            {
+                assert(dispatcher_ == NULL);
+                dispatcher_ = dispatcher;
+            }
+
+            DispatcherBase * detach()
+            {
+                DispatcherBase * dispatcher = dispatcher_;
+                dispatcher_ = NULL;
+                return dispatcher;
+            }
+
+        private:
+            DispatcherBase * dispatcher_;
         };
 
     } // namespace dispatch

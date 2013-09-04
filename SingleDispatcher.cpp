@@ -20,19 +20,16 @@ namespace ppbox
     {
 
         SingleDispatcher::SingleDispatcher(
-            boost::asio::io_service& ios)
-            : DispatcherBase(ios)
-            , thread_(NULL)
-            , dispatcher_(NULL)
+            boost::asio::io_service & io_svc)
+            : CustomDispatcher(io_svc)
         {
-            thread_ = new DispatchThread;
         }
 
         SingleDispatcher::~SingleDispatcher()
         {
-            if (dispatcher_)
-                delete dispatcher_;
-            delete thread_;
+            DispatcherBase * dispatcher = detach();
+            if (dispatcher)
+                delete dispatcher;
         }
 
         void SingleDispatcher::async_open(
@@ -41,84 +38,35 @@ namespace ppbox
         {
             LOG_INFO("[async_open]");
 
-            if (dispatcher_ == NULL) {
-                dispatcher_ = TaskDispatcher::create(io_svc(), thread_->io_svc(), url);
-            } else if (!dispatcher_->accept(url)) {
-                delete dispatcher_;
-                dispatcher_ = TaskDispatcher::create(io_svc(), thread_->io_svc(), url);
+            DispatcherBase * dispatcher = detach();
+
+            if (dispatcher == NULL) {
+                dispatcher = TaskDispatcher::create(io_svc(), url);
+            } else if (!((TaskDispatcher *)dispatcher)->accept(url)) {
+                delete dispatcher;
+                dispatcher = TaskDispatcher::create(io_svc(), url);
             }
 
-            if (dispatcher_ == NULL) {
+            if (dispatcher == NULL) {
                 io_svc().post(boost::bind(resp, error::not_support));
                 return;
             }
 
-            return dispatcher_->async_open(url, resp);
-        }
+            attach(dispatcher);
 
-        bool SingleDispatcher::setup(
-            boost::uint32_t index, 
-            util::stream::Sink & sink, 
-            boost::system::error_code & ec)
-        {
-            return dispatcher_->setup(index, sink, ec);
-        }
-
-        void SingleDispatcher::async_play(
-            SeekRange const & range, 
-            response_t const & seek_resp, 
-            response_t const & resp)
-        {
-            return dispatcher_->async_play(range, seek_resp, resp);
-        }
-
-        bool SingleDispatcher::pause(
-            boost::system::error_code & ec)
-        {
-            return dispatcher_->pause(ec);
-        }
-
-        bool SingleDispatcher::resume(
-            boost::system::error_code & ec)
-        {
-            return dispatcher_->resume(ec);
-        }
-
-        bool SingleDispatcher::get_media_info(
-            MediaInfo & info, 
-            boost::system::error_code & ec)
-        {
-            return dispatcher_->get_media_info(info, ec);
-        }
-
-        bool SingleDispatcher::get_stream_info(
-            std::vector<StreamInfo> & streams, 
-            boost::system::error_code & ec)
-        {
-            return dispatcher_->get_stream_info(streams, ec);
-        }
-
-        bool SingleDispatcher::get_stream_status(
-            StreamStatus & status, 
-            boost::system::error_code & ec)
-        {
-            return dispatcher_->get_stream_status(status, ec);
-        }
-
-        bool SingleDispatcher::cancel(
-            boost::system::error_code & ec)
-        {
-            return dispatcher_->cancel(ec);
+            return CustomDispatcher::async_open(url, resp);
         }
 
         bool SingleDispatcher::close(
             boost::system::error_code & ec)
         {
-            if (dispatcher_ == NULL) {
+            DispatcherBase * dispatcher = detach();
+            if (dispatcher == NULL) {
                 ec = error::session_not_open;
                 return false;
             }
-            return dispatcher_->close(ec);
+            attach(dispatcher);
+            return CustomDispatcher::close(ec);
         }
 
     } // namespace dispatch

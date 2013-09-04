@@ -2,6 +2,7 @@
 
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/DispatchThread.h"
+#include "ppbox/dispatch/DispatchTask.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -35,6 +36,14 @@ namespace ppbox
             delete thread_;
             thread_ = NULL;
         }
+
+        void DispatchThread::post_task(
+            DispathTaskBase * task)
+        {
+            io_svc_.post(
+                boost::bind(&DispathTaskBase::perform, task));
+        }
+
 
     } // namespace dispatch
 } // namespace ppbox

@@ -3,6 +3,8 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/mux/MuxDispatcher.h"
 #include "ppbox/dispatch/mux/MuxTask.h"
+#include "ppbox/dispatch/DispatchModule.h"
+#include "ppbox/dispatch/DispatchTask.h"
 #include "ppbox/dispatch/Error.h"
 
 #include <ppbox/mux/MuxModule.h>
@@ -25,9 +27,8 @@ namespace ppbox
     {
 
         MuxDispatcher::MuxDispatcher(
-            boost::asio::io_service & io_svc, 
-            boost::asio::io_service & dispatch_io_svc)
-            : TaskDispatcher(io_svc, dispatch_io_svc)
+            boost::asio::io_service & io_svc)
+            : TaskDispatcher(io_svc)
             , demuxer_module_(util::daemon::use_module<ppbox::demux::DemuxModule>(io_svc))
             , muxer_module_(util::daemon::use_module<ppbox::mux::MuxModule>(io_svc))
             , demuxer_(NULL)
@@ -89,8 +90,9 @@ namespace ppbox
             response_t const & seek_resp)
         {
             LOG_DEBUG("[start_play]");
-            dispatch_io_svc().post(MuxTask(task_info(), sink_group(), range, seek_resp, 
-                boost::bind(&MuxDispatcher::handle_play, this, _1), demuxer_, muxer_));
+            MuxTask task(task_info(), sink_group(), range, seek_resp, 
+                boost::bind(&MuxDispatcher::handle_play, this, _1), demuxer_, muxer_);
+            module().post_thread_task(make_task(task));
         }
 
         void MuxDispatcher::handle_play(
@@ -107,9 +109,10 @@ namespace ppbox
         void MuxDispatcher::start_buffer()
         {
             LOG_DEBUG("[start_buffer]");
-            dispatch_io_svc().post(MuxTask(task_info(), 
+            MuxTask task(task_info(), 
                 boost::bind(&MuxDispatcher::handle_buffer, this, _1), 
-                demuxer_, muxer_));
+                demuxer_, muxer_);
+            module().post_thread_task(make_task(task));
         }
 
         void MuxDispatcher::handle_buffer(
@@ -149,6 +152,24 @@ namespace ppbox
             muxer_->stream_info(streams);
             ec.clear();
             return true;
+        }
+
+        bool MuxDispatcher::seek(
+            SeekRange & range, 
+            boost::system::error_code & ec)
+        {
+            if (range.type == SeekRange::byte) {
+                return muxer_->byte_seek(range.beg, ec);
+            } else {
+                return muxer_->time_seek(range.beg, ec);
+            }
+        }
+
+        bool MuxDispatcher::read(
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            return muxer_->read(sample, ec);
         }
 
         void MuxDispatcher::do_get_stream_status(

@@ -34,14 +34,12 @@ namespace ppbox
             , next_(NULL)
             , canceling_(false)
         {
-            thread_ = new DispatchThread;
         }
 
         SessionManager::~SessionManager()
         {
             boost::system::error_code ec;
             kill(ec);
-            delete thread_;
         }
 
         bool SessionManager::kill(
@@ -212,6 +210,32 @@ namespace ppbox
             }
         }
 
+        bool SessionManager::seek(
+            boost::uint32_t sid, 
+            SeekRange & range, 
+            boost::system::error_code & ec)
+        {
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
+            if (ses && (ses == main_ses || ses == main_ses->current_sub())) {
+                current_->dispatcher().seek(range, ec);
+            }
+            return !ec;
+        }
+
+        bool SessionManager::read(
+            boost::uint32_t sid, 
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
+            if (ses && (ses == main_ses || ses == main_ses->current_sub())) {
+                current_->dispatcher().read(sample, ec);
+            }
+            return !ec;
+        }
+
         bool SessionManager::pause(
             boost::uint32_t sid, 
             boost::system::error_code & ec)
@@ -348,7 +372,7 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             TaskDispatcher * dispatcher = 
-                TaskDispatcher::create(io_svc_, thread_->io_svc(), url);
+                TaskDispatcher::create(io_svc_, url);
             if (dispatcher) {
                 SessionGroup * group = new SessionGroup(url, *dispatcher);
                 return group;

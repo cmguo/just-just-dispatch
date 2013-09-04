@@ -50,6 +50,20 @@ namespace ppbox
             return manager_.async_play(session_id_, range, seek_resp, resp);
         }
 
+        bool SharedDispatcher::seek(
+            SeekRange & range, 
+            boost::system::error_code & ec)
+        {
+            return manager_.seek(session_id_, range, ec);
+        }
+
+        bool SharedDispatcher::read(
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            return manager_.read(session_id_, sample, ec);
+        }
+
         bool SharedDispatcher::pause(
             boost::system::error_code & ec)
         {

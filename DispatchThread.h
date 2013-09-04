@@ -10,6 +10,8 @@ namespace ppbox
     namespace dispatch
     {
 
+        class DispathTaskBase;
+
         class DispatchThread
         {
         public:
@@ -18,10 +20,8 @@ namespace ppbox
             virtual ~DispatchThread();
 
         public:
-            boost::asio::io_service & io_svc()
-            {
-                return io_svc_;
-            }
+            void post_task(
+                DispathTaskBase * task);
 
         private:
             boost::asio::io_service io_svc_;

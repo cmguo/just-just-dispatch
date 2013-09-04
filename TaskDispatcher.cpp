@@ -3,6 +3,7 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/TaskDispatcher.h"
 #include "ppbox/dispatch/DispatcherTypes.h"
+#include "ppbox/dispatch/DispatchModule.h"
 #include "ppbox/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
@@ -19,12 +20,11 @@ namespace ppbox
 
         TaskDispatcher * TaskDispatcher::create(
             boost::asio::io_service & io_svc, 
-            boost::asio::io_service & dispatch_io_svc, 
             framework::string::Url const & url)
         {
             creator_map_type::const_iterator iter = creator_map().begin();
             for (; iter != creator_map().end(); ++iter) {
-                TaskDispatcher * dispatcher = iter->second(io_svc, dispatch_io_svc);
+                TaskDispatcher * dispatcher = iter->second(io_svc);
                 if (dispatcher->accept(url))
                     return dispatcher;
                 delete dispatcher;
@@ -33,10 +33,9 @@ namespace ppbox
         }
 
         TaskDispatcher::TaskDispatcher(
-            boost::asio::io_service & io_svc, 
-            boost::asio::io_service & dispatch_io_svc)
+            boost::asio::io_service & io_svc)
             : DispatcherBase(io_svc)
-            , dispatch_io_svc_(dispatch_io_svc)
+            , module_(util::daemon::use_module<DispatchModule>(io_svc))
             , task_info_(io_svc)
             , async_type_(none)
         {

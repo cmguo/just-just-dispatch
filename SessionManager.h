@@ -16,7 +16,6 @@ namespace ppbox
 
         class Session;
         class SessionGroup;
-        class DispatchThread;
         class TaskDispatcher;
 
         class SessionManager
@@ -54,6 +53,16 @@ namespace ppbox
                 SeekRange const & range, 
                 response_t const & seek_resp,
                 response_t const & resp);
+
+            bool seek(
+                boost::uint32_t sid,        // 会话ID
+                SeekRange & range, 
+                boost::system::error_code & ec);
+
+            bool read(
+                boost::uint32_t sid,        // 会话ID
+                Sample & sample, 
+                boost::system::error_code & ec);
 
             bool pause(
                 boost::uint32_t sid,        // 会话ID
@@ -130,9 +139,6 @@ namespace ppbox
             timer_t timer_;
             boost::uint32_t timer_id_;
             bool timer_lanched_;
-
-        private:
-            DispatchThread * thread_;
 
         private:
             SessionGroup * current_;

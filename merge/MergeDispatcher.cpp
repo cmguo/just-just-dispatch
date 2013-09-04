@@ -3,6 +3,8 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/merge/MergeDispatcher.h"
 #include "ppbox/dispatch/merge/MergeTask.h"
+#include "ppbox/dispatch/DispatchModule.h"
+#include "ppbox/dispatch/DispatchTask.h"
 #include "ppbox/dispatch/Error.h"
 
 #include <ppbox/merge/MergeModule.h>
@@ -22,9 +24,8 @@ namespace ppbox
     {
 
         MergeDispatcher::MergeDispatcher(
-            boost::asio::io_service & io_svc, 
-            boost::asio::io_service & dispatch_io_svc)
-            : TaskDispatcher(io_svc, dispatch_io_svc)
+            boost::asio::io_service & io_svc)
+            : TaskDispatcher(io_svc)
             , merge_module_(util::daemon::use_module<ppbox::merge::MergeModule>(io_svc))
             , merge_close_token_(0)
             , merger_(NULL)
@@ -83,8 +84,9 @@ namespace ppbox
             response_t const & seek_resp)
         {
             LOG_DEBUG("[start_play]");
-            dispatch_io_svc().post(MergeTask(task_info(), sink_group(), range, seek_resp, 
-                boost::bind(&MergeDispatcher::handle_play, this, _1), merger_));
+            MergeTask task(task_info(), sink_group(), range, seek_resp, 
+                boost::bind(&MergeDispatcher::handle_play, this, _1), merger_);
+            module().post_thread_task(make_task(task));
         }
 
         void MergeDispatcher::handle_play(
@@ -101,8 +103,9 @@ namespace ppbox
         void MergeDispatcher::start_buffer()
         {
             LOG_DEBUG("[start_buffer]");
-            dispatch_io_svc().post(MergeTask(task_info(), 
-                boost::bind(&MergeDispatcher::handle_buffer, this, _1), merger_));
+            MergeTask task(task_info(), 
+                boost::bind(&MergeDispatcher::handle_buffer, this, _1), merger_);
+            module().post_thread_task(make_task(task));
         }
 
         void MergeDispatcher::handle_buffer(
@@ -141,6 +144,25 @@ namespace ppbox
             merger_->stream_info(streams);
             ec.clear();
             return true;
+        }
+
+        bool MergeDispatcher::seek(
+            SeekRange & range, 
+            boost::system::error_code & ec)
+        {
+            if (range.type == SeekRange::byte) {
+                return merger_->byte_seek(range.beg, ec);
+            } else {
+                ec = framework::system::logic_error::not_supported;
+                return false;
+            }
+        }
+
+        bool MergeDispatcher::read(
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            return merger_->read(sample, ec);
         }
 
         void MergeDispatcher::do_get_stream_status(

@@ -21,8 +21,7 @@ namespace ppbox
         {
         public:
             MergeDispatcher(
-                boost::asio::io_service & io_svc, 
-                boost::asio::io_service & dispatch_io_svc);
+                boost::asio::io_service & io_svc);
 
             virtual ~MergeDispatcher();
 
@@ -33,6 +32,15 @@ namespace ppbox
 
             virtual bool get_stream_info(
                 std::vector<StreamInfo> & streams, 
+                boost::system::error_code & ec);
+
+        public:
+            virtual bool seek(
+                SeekRange & range, 
+                boost::system::error_code & ec);
+
+            virtual bool read(
+                Sample & sample, 
                 boost::system::error_code & ec);
 
         public:
