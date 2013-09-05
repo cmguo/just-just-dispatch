@@ -148,16 +148,25 @@ namespace ppbox
             std::vector<StreamInfo> & streams, 
             boost::system::error_code & ec)
         {
-            LOG_DEBUG("[get_stream_info]");
+            LOG_TRACE("[get_stream_info]");
             muxer_->stream_info(streams);
             ec.clear();
             return true;
+        }
+
+        bool MuxDispatcher::get_data_stat(
+            DataStat & stat, 
+            boost::system::error_code & ec)
+        {
+            LOG_TRACE("[get_stream_info]");
+            return demuxer_->get_data_stat(stat, ec);
         }
 
         bool MuxDispatcher::seek(
             SeekRange & range, 
             boost::system::error_code & ec)
         {
+            LOG_DEBUG("[seek]");
             if (range.type == SeekRange::byte) {
                 return muxer_->byte_seek(range.beg, ec);
             } else {
@@ -169,15 +178,16 @@ namespace ppbox
             Sample & sample, 
             boost::system::error_code & ec)
         {
+            //LOG_TRACE("[read]");
             return muxer_->read(sample, ec);
         }
 
         void MuxDispatcher::do_get_stream_status(
-            StreamStatus & info, 
+            StreamStatus & status, 
             boost::system::error_code & ec)
         {
             LOG_TRACE("[do_get_stream_status]");
-            muxer_->stream_status(info);
+            muxer_->stream_status(status);
             ec.clear();
         }
 

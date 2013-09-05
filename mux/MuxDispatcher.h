@@ -40,6 +40,10 @@ namespace ppbox
                 std::vector<StreamInfo> & streams, 
                 boost::system::error_code & ec);
 
+            virtual bool get_data_stat(
+                DataStat & stat, 
+                boost::system::error_code & ec);
+
         public:
             virtual bool seek(
                 SeekRange & range, 
@@ -75,7 +79,7 @@ namespace ppbox
                 boost::system::error_code & ec);
 
             virtual void do_get_stream_status(
-                StreamStatus & info, 
+                StreamStatus & status, 
                 boost::system::error_code & ec);
 
             virtual void do_close(

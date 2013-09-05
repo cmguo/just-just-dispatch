@@ -62,6 +62,10 @@ namespace ppbox
                 StreamStatus & status, 
                 boost::system::error_code & ec) = 0;
 
+            virtual bool get_data_stat(
+                DataStat & stat, 
+                boost::system::error_code & ec) = 0;
+
             virtual bool cancel(
                 boost::system::error_code & ec) = 0;
 

@@ -91,10 +91,17 @@ namespace ppbox
         }
 
         bool SharedDispatcher::get_stream_status(
-            StreamStatus & info, 
+            StreamStatus & status, 
             boost::system::error_code & ec)
         {
-            return manager_.get_stream_status(session_id_, info, ec);
+            return manager_.get_stream_status(session_id_, status, ec);
+        }
+
+        bool SharedDispatcher::get_data_stat(
+            DataStat & stat, 
+            boost::system::error_code & ec)
+        {
+            return manager_.get_data_stat(session_id_, stat, ec);
         }
 
         bool SharedDispatcher::cancel(

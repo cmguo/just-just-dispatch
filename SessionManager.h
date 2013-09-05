@@ -84,7 +84,12 @@ namespace ppbox
 
             bool get_stream_status(
                 boost::uint32_t sid,        // 会话ID
-                StreamStatus & info, 
+                StreamStatus & status, 
+                boost::system::error_code & ec);
+
+            bool get_data_stat(
+                boost::uint32_t sid,        // 会话ID
+                DataStat & stat, 
                 boost::system::error_code & ec);
 
             bool cancel(

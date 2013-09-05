@@ -96,10 +96,17 @@ namespace ppbox
         }
 
         bool CustomDispatcher::get_stream_status(
-            StreamStatus & info, 
+            StreamStatus & status, 
             boost::system::error_code & ec)
         {
-            return dispatcher_->get_stream_status(info, ec);
+            return dispatcher_->get_stream_status(status, ec);
+        }
+
+        bool CustomDispatcher::get_data_stat(
+            DataStat & stat, 
+            boost::system::error_code & ec)
+        {
+            return dispatcher_->get_data_stat(stat, ec);
         }
 
         bool CustomDispatcher::close(

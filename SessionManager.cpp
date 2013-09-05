@@ -309,6 +309,21 @@ namespace ppbox
             return false;
         }
 
+        bool SessionManager::get_data_stat(
+            boost::uint32_t sid, 
+            DataStat & stat, 
+            boost::system::error_code & ec)
+        {
+            LOG_TRACE("[get_data_stat] sid: " << sid << " current:" << current_ << " next:" << next_);
+
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
+            if (ses) {
+                return current_->dispatcher().get_data_stat(stat, ec);
+            }
+            return false;
+        }
+
         bool SessionManager::cancel(
             boost::uint32_t sid,        // »á»°ID
             boost::system::error_code & ec)

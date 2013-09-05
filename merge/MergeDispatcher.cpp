@@ -146,6 +146,16 @@ namespace ppbox
             return true;
         }
 
+        bool MergeDispatcher::get_data_stat(
+            DataStat & stat, 
+            boost::system::error_code & ec)
+        {
+            LOG_TRACE("[get_stream_info]");
+            merger_->data_stat(stat);
+            ec.clear();
+            return true;
+        }
+
         bool MergeDispatcher::seek(
             SeekRange & range, 
             boost::system::error_code & ec)
@@ -166,11 +176,11 @@ namespace ppbox
         }
 
         void MergeDispatcher::do_get_stream_status(
-            StreamStatus & info, 
+            StreamStatus & status, 
             boost::system::error_code & ec)
         {
             LOG_TRACE("[do_get_stream_status]");
-            merger_->stream_status(info);
+            merger_->stream_status(status);
             ec.clear();
         }
 
