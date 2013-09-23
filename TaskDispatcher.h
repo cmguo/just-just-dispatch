@@ -7,7 +7,7 @@
 #include "ppbox/dispatch/TaskInfo.h"
 #include "ppbox/dispatch/SinkGroup.h"
 
-#include <ppbox/common/ClassFactory.h>
+#include <util/tools/ClassFactory.h>
 
 namespace ppbox
 {
@@ -19,7 +19,7 @@ namespace ppbox
 
         class TaskDispatcher
             : public DispatcherBase
-            , public ppbox::common::ClassFactory<
+            , public util::tools::ClassFactory<
                 TaskDispatcher, 
                 size_t, 
                 TaskDispatcher * (
@@ -165,6 +165,6 @@ namespace ppbox
     } // namespace dispatch
 } // namespace ppbox
 
-#define PPBOX_REGISTER_DISPATCHER(p, c) PPBOX_REGISTER_CLASS(p, c)
+#define PPBOX_REGISTER_DISPATCHER(p, c) UTIL_REGISTER_CLASS(p, c)
 
 #endif // _PPBOX_DISPATCH_TASK_DISPATCHER_H_
