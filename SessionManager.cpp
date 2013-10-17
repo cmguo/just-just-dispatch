@@ -387,7 +387,7 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             TaskDispatcher * dispatcher = 
-                TaskDispatcher::create(io_svc_, url);
+                TaskDispatcherFactory::create(io_svc_, url);
             if (dispatcher) {
                 SessionGroup * group = new SessionGroup(url, *dispatcher);
                 return group;

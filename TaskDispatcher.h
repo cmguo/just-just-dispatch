@@ -19,18 +19,7 @@ namespace ppbox
 
         class TaskDispatcher
             : public DispatcherBase
-            , public util::tools::ClassFactory<
-                TaskDispatcher, 
-                size_t, 
-                TaskDispatcher * (
-                    boost::asio::io_service &)
-            >
         {
-        public:
-            static TaskDispatcher * create(
-                boost::asio::io_service & io_svc, 
-                framework::string::Url const & url);
-
         public:
             TaskDispatcher(
                 boost::asio::io_service & io_svc);
@@ -162,9 +151,28 @@ namespace ppbox
             SinkGroup sink_group_;
         };
 
+        struct TaskDispatcherTraits
+            : util::tools::ClassFactoryTraits
+        {
+            typedef boost::uint32_t key_type;
+            typedef TaskDispatcher * (create_proto)(
+                boost::asio::io_service & io_svc);
+
+            static boost::system::error_code error_not_found();
+        };
+
+        class TaskDispatcherFactory
+            : public util::tools::ClassFactory<TaskDispatcherTraits>
+        {
+        public:
+            static TaskDispatcher * create(
+                boost::asio::io_service & io_svc, 
+                framework::string::Url const & url);
+        };
+
     } // namespace dispatch
 } // namespace ppbox
 
-#define PPBOX_REGISTER_DISPATCHER(p, c) UTIL_REGISTER_CLASS(p, c)
+#define PPBOX_REGISTER_DISPATCHER(p, c) UTIL_REGISTER_CLASS(ppbox::dispatch::TaskDispatcherFactory, p, c)
 
 #endif // _PPBOX_DISPATCH_TASK_DISPATCHER_H_

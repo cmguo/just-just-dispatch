@@ -41,10 +41,10 @@ namespace ppbox
             DispatcherBase * dispatcher = detach();
 
             if (dispatcher == NULL) {
-                dispatcher = TaskDispatcher::create(io_svc(), url);
+                dispatcher = TaskDispatcherFactory::create(io_svc(), url);
             } else if (!((TaskDispatcher *)dispatcher)->accept(url)) {
                 delete dispatcher;
-                dispatcher = TaskDispatcher::create(io_svc(), url);
+                dispatcher = TaskDispatcherFactory::create(io_svc(), url);
             }
 
             if (dispatcher == NULL) {

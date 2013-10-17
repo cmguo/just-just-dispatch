@@ -18,20 +18,6 @@ namespace ppbox
 
         FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.TaskDispatcher", framework::logger::Debug);
 
-        TaskDispatcher * TaskDispatcher::create(
-            boost::asio::io_service & io_svc, 
-            framework::string::Url const & url)
-        {
-            creator_map_type::const_iterator iter = creator_map().begin();
-            for (; iter != creator_map().end(); ++iter) {
-                TaskDispatcher * dispatcher = iter->second(io_svc);
-                if (dispatcher->accept(url))
-                    return dispatcher;
-                delete dispatcher;
-            }
-            return NULL;
-        }
-
         TaskDispatcher::TaskDispatcher(
             boost::asio::io_service & io_svc)
             : DispatcherBase(io_svc)
@@ -266,6 +252,20 @@ namespace ppbox
             response_t resp;
             resp.swap(resp_);
             resp(ec);
+        }
+
+        TaskDispatcher * TaskDispatcherFactory::create(
+            boost::asio::io_service & io_svc, 
+            framework::string::Url const & url)
+        {
+            creator_map_type::const_iterator iter = creator_map().begin();
+            for (; iter != creator_map().end(); ++iter) {
+                TaskDispatcher * dispatcher = iter->second(io_svc);
+                if (dispatcher->accept(url))
+                    return dispatcher;
+                delete dispatcher;
+            }
+            return NULL;
         }
 
     } // namespace dispatch
