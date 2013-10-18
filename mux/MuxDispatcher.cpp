@@ -187,6 +187,7 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             LOG_TRACE("[do_get_stream_status]");
+            demuxer_->fill_data(ec);
             muxer_->stream_status(status);
             ec.clear();
         }

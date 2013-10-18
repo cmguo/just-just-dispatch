@@ -180,6 +180,7 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             LOG_TRACE("[do_get_stream_status]");
+            merger_->fill_data(ec);
             merger_->stream_status(status);
             ec.clear();
         }
