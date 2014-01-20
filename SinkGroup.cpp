@@ -3,6 +3,8 @@
 #include "ppbox/dispatch/Common.h"
 #include "ppbox/dispatch/SinkGroup.h"
 
+#include <boost/asio/write.hpp>
+
 namespace ppbox
 {
     namespace dispatch
@@ -42,9 +44,13 @@ namespace ppbox
 
             size_t n = 0;
             if (sample.itrack < sinks_.size()) {
-                n = sinks_[sample.itrack]->write_some(sample.data, ec);
+                //n = sinks_[sample.itrack]->write_some(sample.data, ec);
+				n = boost::asio::write(*sinks_[sample.itrack], 
+					sample.data, boost::asio::transfer_all(), ec);
             } else {
-                n = default_sink_->write_some(sample.data, ec);
+                //n = default_sink_->write_some(sample.data, ec);
+				n = boost::asio::write(*default_sink_, 
+					sample.data, boost::asio::transfer_all(), ec);
             }
             if (n == sample.size) {
                 sample.data.clear();
