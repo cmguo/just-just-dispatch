@@ -53,6 +53,10 @@ namespace ppbox
                 Sample & sample, 
                 boost::system::error_code & ec);
 
+            virtual bool free(
+                Sample & sample, 
+                boost::system::error_code & ec);
+
         public:
             virtual bool accept(
                 framework::string::Url const & url);

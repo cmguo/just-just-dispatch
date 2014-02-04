@@ -236,6 +236,19 @@ namespace ppbox
             return !ec;
         }
 
+        bool SessionManager::free(
+            boost::uint32_t sid, 
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            Session * main_ses = NULL;
+            Session * ses = user_session(sid, main_ses, ec);
+            if (ses && (ses == main_ses || ses == main_ses->current_sub())) {
+                current_->dispatcher().free(sample, ec);
+            }
+            return !ec;
+        }
+
         bool SessionManager::pause(
             boost::uint32_t sid, 
             boost::system::error_code & ec)

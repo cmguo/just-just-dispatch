@@ -175,6 +175,13 @@ namespace ppbox
             return merger_->read(sample, ec);
         }
 
+        bool MergeDispatcher::free(
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            return merger_->free(sample, ec);
+        }
+
         void MergeDispatcher::do_get_stream_status(
             StreamStatus & status, 
             boost::system::error_code & ec)

@@ -64,6 +64,13 @@ namespace ppbox
             return manager_.read(session_id_, sample, ec);
         }
 
+        bool SharedDispatcher::free(
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            return manager_.free(session_id_, sample, ec);
+        }
+
         bool SharedDispatcher::pause(
             boost::system::error_code & ec)
         {

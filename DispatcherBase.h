@@ -44,6 +44,10 @@ namespace ppbox
                 Sample & sample, 
                 boost::system::error_code & ec) = 0;
 
+            virtual bool free(
+                Sample & sample, 
+                boost::system::error_code & ec) = 0;
+
             virtual bool pause(
                 boost::system::error_code & ec) = 0;
 

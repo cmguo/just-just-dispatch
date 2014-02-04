@@ -182,6 +182,14 @@ namespace ppbox
             return muxer_->read(sample, ec);
         }
 
+        bool MuxDispatcher::free(
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            //LOG_TRACE("[read]");
+            return demuxer_->free_sample(sample, ec);
+        }
+
         void MuxDispatcher::do_get_stream_status(
             StreamStatus & status, 
             boost::system::error_code & ec)

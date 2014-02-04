@@ -64,6 +64,11 @@ namespace ppbox
                 Sample & sample, 
                 boost::system::error_code & ec);
 
+            bool free(
+                boost::uint32_t sid,        // 会话ID
+                Sample & sample, 
+                boost::system::error_code & ec);
+
             bool pause(
                 boost::uint32_t sid,        // 会话ID
                 boost::system::error_code & ec);

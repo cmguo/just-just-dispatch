@@ -69,6 +69,13 @@ namespace ppbox
             return dispatcher_->read(sample, ec);
         }
 
+        bool CustomDispatcher::free(
+            Sample & sample, 
+            boost::system::error_code & ec)
+        {
+            return dispatcher_->free(sample, ec);
+        }
+
         bool CustomDispatcher::pause(
             boost::system::error_code & ec)
         {
