@@ -205,8 +205,11 @@ namespace ppbox
         {
             TaskDispatcher::switch_to(url, ec);
             std::string format = url.param(param_format);
-            if (format_ != format) {
+            if (!ec && format_ != format) {
                 ec = ppbox::merge::error::format_not_match;
+            }
+            if (!ec) {
+                merger_->reset(ec);
             }
             return !ec;
         }
