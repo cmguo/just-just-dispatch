@@ -88,13 +88,11 @@ namespace ppbox
                 return ec == boost::asio::error::would_block;
             }
 
-            void check_speed(
-                Sample const & sample) const;
-
             void reset_time(
                 boost::uint64_t time);
 
-            void sleep() const;
+            void sleep(
+                framework::timer::Duration const & d) const;
 
         protected:
             void response(
@@ -146,11 +144,23 @@ namespace ppbox
             }
 
         private:
-            void sleep()
+            void check_speed(
+                Sample const & sample)
+            {
+                framework::timer::Time send_time = start_time_ 
+                    + framework::timer::Duration::milliseconds(sample.time);
+                framework::timer::Time now;
+                if (send_time > now) {
+                    sleep(send_time - now);
+                }
+            }
+
+            void sleep(
+                framework::timer::Duration const & d)
             {
                 TaskImpl & task = static_cast<TaskImpl &>(*this);
                 task.update_status(task_info_.status);
-                TaskBase::sleep();
+                TaskBase::sleep(d);
             }
 
             void update_status(
@@ -167,6 +177,9 @@ namespace ppbox
                     return true;
                 }
 
+                framework::timer::Duration const block_sleep(
+                    framework::timer::Duration::milliseconds(100));
+
                 while (!task_info_.cancel) {
                     if (!task.write_continuable(ec)) {
                         break;
@@ -179,7 +192,7 @@ namespace ppbox
                             }
                         }
                     }
-                    task.sleep();
+                    task.sleep(block_sleep);
                     if (task.write_sample(sample, ec))
                         return true;
                 }
@@ -199,6 +212,12 @@ namespace ppbox
 
                 // ÍÏ¶¯
 
+                framework::timer::Duration const pause_sleep(
+                    framework::timer::Duration::milliseconds(100));
+
+                framework::timer::Duration const block_sleep(
+                    framework::timer::Duration::milliseconds(100));
+
                 if (range_.type == SeekRange::byte) {
                     task.byte_seek(range_.beg, range_.end, ec);
                 } else if (range_.type == SeekRange::time) {
@@ -207,7 +226,7 @@ namespace ppbox
 
                 range_.beg = task.check_seek(ec);
                 while (!task_info_.cancel && ec && task.read_continuable(ec)) {
-                    task.sleep();
+                    task.sleep(block_sleep);
                     range_.beg = task.check_seek(ec);
                 }
 
@@ -225,7 +244,7 @@ namespace ppbox
 
                     if (!ec) {
                         while (task_info_.pause) {
-                            task.sleep();
+                            task.sleep(pause_sleep);
                         }
                     }
                 }
@@ -237,7 +256,7 @@ namespace ppbox
 
                 while (!task_info_.cancel) {
                     if (task_info_.pause) {
-                        task.sleep();
+                        task.sleep(pause_sleep);
                         continue;
                     }
 
@@ -250,7 +269,7 @@ namespace ppbox
                             break;
                         }
                     } else if (task.read_continuable(ec)) {
-                        task.sleep();
+                        task.sleep(block_sleep);
                     } else {
                         break;
                     }
@@ -273,6 +292,9 @@ namespace ppbox
 
                 boost::system::error_code ec;
 
+                framework::timer::Duration const block_sleep(
+                    framework::timer::Duration::milliseconds(100));
+
                 while (!task_info_.cancel && !buffer_finish_) {
                     for (size_t i = 0; i < 10 && !task_info_.cancel; ++i) {
                         if (!task.buffer(ec) && !task.read_continuable(ec)) {
@@ -282,7 +304,7 @@ namespace ppbox
                     }
                     if (buffer_finish_)
                         break;
-                    task.sleep();
+                    task.sleep(block_sleep);
                 }
 
                 if (task_info_.cancel)

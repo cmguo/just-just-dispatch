@@ -47,26 +47,16 @@ namespace ppbox
             return sinks_.write(sample, ec);
         }
 
-        void TaskBase::check_speed(
-            Sample const & sample) const
-        {
-            framework::timer::Time send_time = start_time_ 
-                + framework::timer::Duration::milliseconds(sample.time);
-            framework::timer::Time now;
-            if (send_time > now) {
-                boost::this_thread::sleep((send_time - now).to_posix_duration());
-            }
-        }
-
         void TaskBase::reset_time(
             boost::uint64_t time)
         {
             start_time_ = framework::timer::Time::now() - framework::timer::Duration::milliseconds(time);
         }
 
-        void TaskBase::sleep() const
+        void TaskBase::sleep(
+            framework::timer::Duration const & d) const
         {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+            boost::this_thread::sleep(d.to_posix_duration());
         }
 
         void TaskBase::response(
