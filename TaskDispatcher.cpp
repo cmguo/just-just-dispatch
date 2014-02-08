@@ -122,7 +122,7 @@ namespace ppbox
             framework::string::Url const & url, 
             boost::system::error_code & ec)
         {
-            LOG_DEBUG("[assign]");
+            LOG_DEBUG("[switch_to]");
             task_info_.fast = url.param("dispatch.fast") == "true";
             sink_group_.clear();
             ec.clear();

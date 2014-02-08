@@ -203,6 +203,7 @@ namespace ppbox
             framework::string::Url const & url, 
             boost::system::error_code & ec)
         {
+            LOG_TRACE("[switch_to]");
             TaskDispatcher::switch_to(url, ec);
             std::string format = url.param(param_format);
             if (!ec && format_ != format) {
@@ -210,6 +211,8 @@ namespace ppbox
             }
             if (!ec) {
                 merger_->reset(ec);
+                if (ec == boost::asio::error::would_block)
+                    ec.clear();
             }
             return !ec;
         }
