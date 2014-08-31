@@ -15,7 +15,7 @@ namespace ppbox
         {
         }
 
-        size_t DropSink::write(
+        size_t DropSink::private_write_some(
             buffers_t const & buffers, 
             boost::system::error_code & ec)
         {
