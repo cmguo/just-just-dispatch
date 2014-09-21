@@ -3,12 +3,12 @@
 #ifndef _PPBOX_DISPATCH_DISPATCH_BASE_H_
 #define _PPBOX_DISPATCH_DISPATCH_BASE_H_
 
-#include <ppbox/data/base/MediaInfo.h>
-#include <ppbox/data/base/StreamStatus.h>
 #include <ppbox/data/base/DataStat.h>
 
 #include <ppbox/avbase/Sample.h>
 #include <ppbox/avbase/StreamInfo.h>
+#include <ppbox/avbase/MediaInfo.h>
+#include <ppbox/avbase/StreamStatus.h>
 
 #include <framework/string/Url.h>
 
@@ -27,12 +27,12 @@ namespace ppbox
     namespace dispatch
     {
 
-        using ppbox::data::MediaInfo;
-        using ppbox::data::StreamStatus;
         using ppbox::data::DataStat;
 
         using ppbox::avbase::Sample;
         using ppbox::avbase::StreamInfo;
+        using ppbox::avbase::MediaInfo;
+        using ppbox::avbase::StreamStatus;
 
         typedef boost::function<void (
             boost::system::error_code const &)> response_t;
