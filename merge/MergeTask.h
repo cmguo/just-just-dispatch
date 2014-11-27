@@ -1,13 +1,13 @@
 // MergeTask.h
 
-#ifndef _PPBOX_DISPATCH_MERGE_MERGE_TASK_H_
-#define _PPBOX_DISPATCH_MERGE_MERGE_TASK_H_
+#ifndef _JUST_DISPATCH_MERGE_MERGE_TASK_H_
+#define _JUST_DISPATCH_MERGE_MERGE_TASK_H_
 
-#include "ppbox/dispatch/Task.h"
+#include "just/dispatch/Task.h"
 
-#include <ppbox/merge/MergerBase.h>
+#include <just/merge/MergerBase.h>
 
-namespace ppbox
+namespace just
 {
 
     namespace dispatch
@@ -23,7 +23,7 @@ namespace ppbox
                 SeekRange const & range, 
                 response_t const & seek_resp, 
                 response_t const & resp, 
-                ppbox::merge::MergerBase * merger)
+                just::merge::MergerBase * merger)
                 : Task<MergeTask>(info, sinks, range, seek_resp, resp)
                 , merger_(merger)
             {
@@ -32,7 +32,7 @@ namespace ppbox
             MergeTask(
                 TaskInfo & info, 
                 response_t const & resp, 
-                ppbox::merge::MergerBase * merger)
+                just::merge::MergerBase * merger)
                 : Task<MergeTask>(info, resp)
                 , merger_(merger)
             {
@@ -90,10 +90,10 @@ namespace ppbox
             }
 
         private:
-            ppbox::merge::MergerBase * merger_;
+            just::merge::MergerBase * merger_;
         };
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_MERGE_MERGE_TASK_H_
+#endif // _JUST_DISPATCH_MERGE_MERGE_TASK_H_

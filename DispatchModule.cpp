@@ -1,14 +1,14 @@
 // DispatchModule.cpp
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/DispatchModule.h"
-#include "ppbox/dispatch/SessionManager.h"
-#include "ppbox/dispatch/DispatchTask.h"
-#include "ppbox/dispatch/DispatchThread.h"
-#include "ppbox/dispatch/SharedDispatcher.h"
-#include "ppbox/dispatch/SingleDispatcher.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/DispatchModule.h"
+#include "just/dispatch/SessionManager.h"
+#include "just/dispatch/DispatchTask.h"
+#include "just/dispatch/DispatchThread.h"
+#include "just/dispatch/SharedDispatcher.h"
+#include "just/dispatch/SingleDispatcher.h"
 
-#include <ppbox/common/UrlHelper.h>
+#include <just/common/UrlHelper.h>
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -17,14 +17,14 @@
 
 FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("DispatchModule", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
 
         DispatchModule::DispatchModule(
             util::daemon::Daemon & daemon)
-            : ppbox::common::CommonModuleBase<DispatchModule>(daemon, "DispatchModule")
+            : just::common::CommonModuleBase<DispatchModule>(daemon, "DispatchModule")
         {
         }
 
@@ -58,7 +58,7 @@ namespace ppbox
             framework::string::Url & url, 
             boost::system::error_code & ec)
         {
-            ppbox::common::decode_url(url, ec);
+            just::common::decode_url(url, ec);
             if (ec) {
                 return false;
             }
@@ -144,4 +144,4 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just

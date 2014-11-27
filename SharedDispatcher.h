@@ -1,11 +1,11 @@
 // SharedDispatcher.h
 
-#ifndef _PPBOX_DISPATCH_SHARED_DISPATCHER_H_
-#define _PPBOX_DISPATCH_SHARED_DISPATCHER_H_
+#ifndef _JUST_DISPATCH_SHARED_DISPATCHER_H_
+#define _JUST_DISPATCH_SHARED_DISPATCHER_H_
 
-#include "ppbox/dispatch/DispatcherBase.h"
+#include "just/dispatch/DispatcherBase.h"
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -82,6 +82,6 @@ namespace ppbox
         };
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_SHARED_DISPATCHER_H_
+#endif // _JUST_DISPATCH_SHARED_DISPATCHER_H_

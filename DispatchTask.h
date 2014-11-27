@@ -1,9 +1,9 @@
 // DispatchTask.h
 
-#ifndef _PPBOX_DISPATCH_DISPATCH_TASK_H_
-#define _PPBOX_DISPATCH_DISPATCH_TASK_H_
+#ifndef _JUST_DISPATCH_DISPATCH_TASK_H_
+#define _JUST_DISPATCH_DISPATCH_TASK_H_
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -70,6 +70,6 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_DISPATCH_TASK_H_
+#endif // _JUST_DISPATCH_DISPATCH_TASK_H_

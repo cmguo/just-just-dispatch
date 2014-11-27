@@ -1,15 +1,15 @@
 // Task.h
 
-#ifndef _PPBOX_DISPATCH_TASK_H_
-#define _PPBOX_DISPATCH_TASK_H_
+#ifndef _JUST_DISPATCH_TASK_H_
+#define _JUST_DISPATCH_TASK_H_
 
-#include "ppbox/dispatch/TaskInfo.h"
-#include "ppbox/dispatch/DispatchBase.h"
-#include "ppbox/dispatch/SinkGroup.h"
+#include "just/dispatch/TaskInfo.h"
+#include "just/dispatch/DispatchBase.h"
+#include "just/dispatch/SinkGroup.h"
 
 #include <framework/timer/ClockTime.h>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -315,6 +315,6 @@ namespace ppbox
         };
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_TASK_H_
+#endif // _JUST_DISPATCH_TASK_H_

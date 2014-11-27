@@ -1,20 +1,20 @@
 // SessionGroup.h
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/SessionGroup.h"
-#include "ppbox/dispatch/Session.h"
-#include "ppbox/dispatch/TaskDispatcher.h"
-#include "ppbox/dispatch/Error.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/SessionGroup.h"
+#include "just/dispatch/Session.h"
+#include "just/dispatch/TaskDispatcher.h"
+#include "just/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
 
-        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.SessionGroup", framework::logger::Debug);
+        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.dispatch.SessionGroup", framework::logger::Debug);
 
         static char const * const status_str[] = {
             "waiting", 
@@ -262,4 +262,4 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just

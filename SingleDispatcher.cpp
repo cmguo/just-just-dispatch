@@ -1,10 +1,10 @@
 // ThreadDispatcher.cpp
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/SingleDispatcher.h"
-#include "ppbox/dispatch/DispatchThread.h"
-#include "ppbox/dispatch/TaskDispatcher.h"
-#include "ppbox/dispatch/Error.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/SingleDispatcher.h"
+#include "just/dispatch/DispatchThread.h"
+#include "just/dispatch/TaskDispatcher.h"
+#include "just/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -12,9 +12,9 @@ using namespace framework::logger;
 
 #include <boost/bind.hpp>
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.ThreadDispatcher", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.dispatch.ThreadDispatcher", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -70,5 +70,5 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 

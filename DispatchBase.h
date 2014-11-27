@@ -1,14 +1,14 @@
 // DispatchBase.h
 
-#ifndef _PPBOX_DISPATCH_DISPATCH_BASE_H_
-#define _PPBOX_DISPATCH_DISPATCH_BASE_H_
+#ifndef _JUST_DISPATCH_DISPATCH_BASE_H_
+#define _JUST_DISPATCH_DISPATCH_BASE_H_
 
-#include <ppbox/data/base/DataStat.h>
+#include <just/data/base/DataStat.h>
 
-#include <ppbox/avbase/Sample.h>
-#include <ppbox/avbase/StreamInfo.h>
-#include <ppbox/avbase/MediaInfo.h>
-#include <ppbox/avbase/StreamStatus.h>
+#include <just/avbase/Sample.h>
+#include <just/avbase/StreamInfo.h>
+#include <just/avbase/MediaInfo.h>
+#include <just/avbase/StreamStatus.h>
 
 #include <framework/string/Url.h>
 
@@ -22,17 +22,17 @@ namespace util
     }
 }
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
 
-        using ppbox::data::DataStat;
+        using just::data::DataStat;
 
-        using ppbox::avbase::Sample;
-        using ppbox::avbase::StreamInfo;
-        using ppbox::avbase::MediaInfo;
-        using ppbox::avbase::StreamStatus;
+        using just::avbase::Sample;
+        using just::avbase::StreamInfo;
+        using just::avbase::MediaInfo;
+        using just::avbase::StreamStatus;
 
         typedef boost::function<void (
             boost::system::error_code const &)> response_t;
@@ -84,6 +84,6 @@ namespace ppbox
         };
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_DISPATCH_BASE_H_
+#endif // _JUST_DISPATCH_DISPATCH_BASE_H_

@@ -1,16 +1,16 @@
 // SharedDispatcher.cpp
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/SharedDispatcher.h"
-#include "ppbox/dispatch/SessionManager.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/SharedDispatcher.h"
+#include "just/dispatch/SessionManager.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
 using namespace framework::logger;
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.SharedDispatcher", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.dispatch.SharedDispatcher", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -124,5 +124,5 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 

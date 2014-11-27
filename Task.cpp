@@ -1,8 +1,8 @@
 // Task.h
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/Task.h"
-#include "ppbox/dispatch/Session.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/Task.h"
+#include "just/dispatch/Session.h"
 
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -67,4 +67,4 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just

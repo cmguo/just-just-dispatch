@@ -1,22 +1,22 @@
 // TaskDispatcher.h
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/TaskDispatcher.h"
-#include "ppbox/dispatch/DispatcherTypes.h"
-#include "ppbox/dispatch/DispatchModule.h"
-#include "ppbox/dispatch/Error.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/TaskDispatcher.h"
+#include "just/dispatch/DispatcherTypes.h"
+#include "just/dispatch/DispatchModule.h"
+#include "just/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
 
 #include <boost/bind.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
 
-        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.TaskDispatcher", framework::logger::Debug);
+        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.dispatch.TaskDispatcher", framework::logger::Debug);
 
         TaskDispatcher::TaskDispatcher(
             boost::asio::io_service & io_svc)
@@ -269,4 +269,4 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just

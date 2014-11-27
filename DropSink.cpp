@@ -1,11 +1,11 @@
 // DropSink.h
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/DropSink.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/DropSink.h"
 
 #include <util/buffers/BuffersSize.h>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -25,4 +25,4 @@ namespace ppbox
 
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just

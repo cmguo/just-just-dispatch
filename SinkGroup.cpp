@@ -1,11 +1,11 @@
 // SinkGroup.h
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/SinkGroup.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/SinkGroup.h"
 
 #include <boost/asio/write.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -72,4 +72,4 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just

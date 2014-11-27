@@ -1,8 +1,8 @@
 // DispatchThread.cpp
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/DispatchThread.h"
-#include "ppbox/dispatch/DispatchTask.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/DispatchThread.h"
+#include "just/dispatch/DispatchTask.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -11,9 +11,9 @@ using namespace framework::logger;
 #include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.DispatchThread", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.dispatch.DispatchThread", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -46,5 +46,5 @@ namespace ppbox
 
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 

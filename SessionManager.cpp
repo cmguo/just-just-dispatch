@@ -1,24 +1,24 @@
 // SessionManager.cpp
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/SessionManager.h"
-#include "ppbox/dispatch/Session.h"
-#include "ppbox/dispatch/SessionGroup.h"
-#include "ppbox/dispatch/DispatchThread.h"
-#include "ppbox/dispatch/TaskDispatcher.h"
-#include "ppbox/dispatch/Error.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/SessionManager.h"
+#include "just/dispatch/Session.h"
+#include "just/dispatch/SessionGroup.h"
+#include "just/dispatch/DispatchThread.h"
+#include "just/dispatch/TaskDispatcher.h"
+#include "just/dispatch/Error.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
 
 #include <boost/bind.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
 
-        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.SessionManager", framework::logger::Debug);
+        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.dispatch.SessionManager", framework::logger::Debug);
 
 #define LOG_XXX(func) LOG_INFO("[" func "] sid: " << sid << " current:" << current_ << " next:" << next_);
 
@@ -587,4 +587,4 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just

@@ -1,15 +1,15 @@
 // DispatchModule.h
 
-#ifndef _PPBOX_DISPATCH_DISPATCH_MODULE_H_
-#define _PPBOX_DISPATCH_DISPATCH_MODULE_H_
+#ifndef _JUST_DISPATCH_DISPATCH_MODULE_H_
+#define _JUST_DISPATCH_DISPATCH_MODULE_H_
 
-#include <ppbox/common/CommonModuleBase.h>
+#include <just/common/CommonModuleBase.h>
 
 #include <framework/string/Url.h>
 
 #include <boost/thread/mutex.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -20,7 +20,7 @@ namespace ppbox
         class DispathTaskBase;
 
         class DispatchModule
-            : public ppbox::common::CommonModuleBase<DispatchModule>
+            : public just::common::CommonModuleBase<DispatchModule>
         {
         public:
             DispatchModule(
@@ -63,6 +63,6 @@ namespace ppbox
         };
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_DISPATCH_MODULE_H_
+#endif // _JUST_DISPATCH_DISPATCH_MODULE_H_

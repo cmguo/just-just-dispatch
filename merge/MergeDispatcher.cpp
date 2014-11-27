@@ -1,14 +1,14 @@
 // MergeDispatcher.cpp
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/merge/MergeDispatcher.h"
-#include "ppbox/dispatch/merge/MergeTask.h"
-#include "ppbox/dispatch/DispatchModule.h"
-#include "ppbox/dispatch/DispatchTask.h"
-#include "ppbox/dispatch/Error.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/merge/MergeDispatcher.h"
+#include "just/dispatch/merge/MergeTask.h"
+#include "just/dispatch/DispatchModule.h"
+#include "just/dispatch/DispatchTask.h"
+#include "just/dispatch/Error.h"
 
-#include <ppbox/merge/MergeModule.h>
-#include <ppbox/merge/MergeError.h>
+#include <just/merge/MergeModule.h>
+#include <just/merge/MergeError.h>
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -16,9 +16,9 @@
 #include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.MergeDispatcher", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.dispatch.MergeDispatcher", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -26,7 +26,7 @@ namespace ppbox
         MergeDispatcher::MergeDispatcher(
             boost::asio::io_service & io_svc)
             : TaskDispatcher(io_svc)
-            , merge_module_(util::daemon::use_module<ppbox::merge::MergeModule>(io_svc))
+            , merge_module_(util::daemon::use_module<just::merge::MergeModule>(io_svc))
             , merge_close_token_(0)
             , merger_(NULL)
             , cancel_token_(false)
@@ -94,7 +94,7 @@ namespace ppbox
         {
             LOG_DEBUG("[handle_play] ec:" << ec.message());
             boost::system::error_code ec1 = ec;
-            if (ec1 == ppbox::merge::error::end_of_file) {
+            if (ec1 == just::merge::error::end_of_file) {
                 ec1.clear();
             }
             response(ec1);
@@ -207,7 +207,7 @@ namespace ppbox
             TaskDispatcher::switch_to(url, ec);
             std::string format = url.param(param_format);
             if (!ec && format_ != format) {
-                ec = ppbox::merge::error::format_not_match;
+                ec = just::merge::error::format_not_match;
             }
             if (!ec) {
                 merger_->reset(ec);
@@ -218,4 +218,4 @@ namespace ppbox
         }
 
     } // namespace mux
-} // namespace ppbox
+} // namespace just

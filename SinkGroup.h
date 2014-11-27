@@ -1,12 +1,12 @@
 // SinkGroup.h
 
-#ifndef _PPBOX_DISPATCH_SINK_GROUP_H_
-#define _PPBOX_DISPATCH_SINK_GROUP_H_
+#ifndef _JUST_DISPATCH_SINK_GROUP_H_
+#define _JUST_DISPATCH_SINK_GROUP_H_
 
-#include "ppbox/dispatch/DispatchBase.h"
-#include "ppbox/dispatch/DropSink.h"
+#include "just/dispatch/DispatchBase.h"
+#include "just/dispatch/DropSink.h"
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -53,6 +53,6 @@ namespace ppbox
         };
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_SINK_GROUP_H_
+#endif // _JUST_DISPATCH_SINK_GROUP_H_

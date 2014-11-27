@@ -1,14 +1,14 @@
 // MuxTask.h
 
-#ifndef _PPBOX_DISPATCH_MUX_MUX_TASK_H_
-#define _PPBOX_DISPATCH_MUX_MUX_TASK_H_
+#ifndef _JUST_DISPATCH_MUX_MUX_TASK_H_
+#define _JUST_DISPATCH_MUX_MUX_TASK_H_
 
-#include "ppbox/dispatch/Task.h"
+#include "just/dispatch/Task.h"
 
-#include <ppbox/mux/MuxerBase.h>
-#include <ppbox/demux/base/DemuxerBase.h>
+#include <just/mux/MuxerBase.h>
+#include <just/demux/base/DemuxerBase.h>
 
-namespace ppbox
+namespace just
 {
 
     namespace dispatch
@@ -24,8 +24,8 @@ namespace ppbox
                 SeekRange const & range, 
                 response_t const & seek_resp, 
                 response_t const & resp, 
-                ppbox::demux::DemuxerBase* demuxer,
-                ppbox::mux::MuxerBase *muxer)
+                just::demux::DemuxerBase* demuxer,
+                just::mux::MuxerBase *muxer)
                 : Task<MuxTask>(info, sinks, range, seek_resp, resp)
                 , demuxer_(demuxer)
                 , muxer_(muxer)
@@ -35,8 +35,8 @@ namespace ppbox
             MuxTask(
                 TaskInfo & info, 
                 response_t const & resp, 
-                ppbox::demux::DemuxerBase* demuxer,
-                ppbox::mux::MuxerBase *muxer)
+                just::demux::DemuxerBase* demuxer,
+                just::mux::MuxerBase *muxer)
                 : Task<MuxTask>(info, resp)
                 , demuxer_(demuxer)
                 , muxer_(muxer)
@@ -93,11 +93,11 @@ namespace ppbox
             }
 
         private:
-            ppbox::demux::DemuxerBase* demuxer_;
-            ppbox::mux::MuxerBase * muxer_;
+            just::demux::DemuxerBase* demuxer_;
+            just::mux::MuxerBase * muxer_;
         };
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_MUX_MUX_TASK_H_
+#endif // _JUST_DISPATCH_MUX_MUX_TASK_H_

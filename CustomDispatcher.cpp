@@ -1,9 +1,9 @@
 // CustomDispatcher.cpp
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/CustomDispatcher.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/CustomDispatcher.h"
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -123,5 +123,5 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 

@@ -1,11 +1,11 @@
 // MuxDispatcher.h
 
-#ifndef _PPBOX_DISPATCH_MUX_MUX_DISPATCHER_H_
-#define _PPBOX_DISPATCH_MUX_MUX_DISPATCHER_H_
+#ifndef _JUST_DISPATCH_MUX_MUX_DISPATCHER_H_
+#define _JUST_DISPATCH_MUX_MUX_DISPATCHER_H_
 
-#include "ppbox/dispatch/TaskDispatcher.h"
+#include "just/dispatch/TaskDispatcher.h"
 
-namespace ppbox
+namespace just
 {
     namespace demux
     {
@@ -108,11 +108,11 @@ namespace ppbox
                 boost::system::error_code & ec);
 
         private:
-            ppbox::demux::DemuxModule & demuxer_module_;
-            ppbox::mux::MuxModule & muxer_module_;
+            just::demux::DemuxModule & demuxer_module_;
+            just::mux::MuxModule & muxer_module_;
 
-            ppbox::demux::DemuxerBase* demuxer_;
-            ppbox::mux::MuxerBase *muxer_;
+            just::demux::DemuxerBase* demuxer_;
+            just::mux::MuxerBase *muxer_;
 
             std::string format_;
 
@@ -120,9 +120,9 @@ namespace ppbox
             boost::uint32_t audio_type_;          //ÒôÆµË÷ÒýÖµ
         };
 
-        PPBOX_REGISTER_DISPATCHER(2, MuxDispatcher);
+        JUST_REGISTER_DISPATCHER(2, MuxDispatcher);
 
     } // namespace dispatcher
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_MUX_MUX_DISPATCHER_H_
+#endif // _JUST_DISPATCH_MUX_MUX_DISPATCHER_H_

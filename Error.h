@@ -1,9 +1,9 @@
 // Error.h
 
-#ifndef _PPBOX_DISPATCH_ERROR_H_
-#define _PPBOX_DISPATCH_ERROR_H_
+#ifndef _JUST_DISPATCH_ERROR_H_
+#define _JUST_DISPATCH_ERROR_H_
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -75,7 +75,7 @@ namespace ppbox
         } // namespace error
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
 namespace boost
 {
@@ -83,16 +83,16 @@ namespace boost
     {
 
         template<>
-        struct is_error_code_enum<ppbox::dispatch::error::errors>
+        struct is_error_code_enum<just::dispatch::error::errors>
         {
             BOOST_STATIC_CONSTANT(bool, value = true);
         };
 
 #ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-        using ppbox::dispatch::error::make_error_code;
+        using just::dispatch::error::make_error_code;
 #endif
 
     }
 }
 
-#endif // _PPBOX_DISPATCH_ERROR_H_
+#endif // _JUST_DISPATCH_ERROR_H_

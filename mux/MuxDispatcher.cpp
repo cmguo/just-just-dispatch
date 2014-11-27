@@ -1,17 +1,17 @@
 // MuxDispatcher.cpp
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/mux/MuxDispatcher.h"
-#include "ppbox/dispatch/mux/MuxTask.h"
-#include "ppbox/dispatch/DispatchModule.h"
-#include "ppbox/dispatch/DispatchTask.h"
-#include "ppbox/dispatch/Error.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/mux/MuxDispatcher.h"
+#include "just/dispatch/mux/MuxTask.h"
+#include "just/dispatch/DispatchModule.h"
+#include "just/dispatch/DispatchTask.h"
+#include "just/dispatch/Error.h"
 
-#include <ppbox/mux/MuxModule.h>
-#include <ppbox/mux/MuxError.h>
+#include <just/mux/MuxModule.h>
+#include <just/mux/MuxError.h>
 
-#include <ppbox/demux/DemuxModule.h>
-#include <ppbox/demux/base/DemuxerBase.h>
+#include <just/demux/DemuxModule.h>
+#include <just/demux/base/DemuxerBase.h>
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -19,9 +19,9 @@
 #include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.dispatch.MuxDispatcher", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.dispatch.MuxDispatcher", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -29,8 +29,8 @@ namespace ppbox
         MuxDispatcher::MuxDispatcher(
             boost::asio::io_service & io_svc)
             : TaskDispatcher(io_svc)
-            , demuxer_module_(util::daemon::use_module<ppbox::demux::DemuxModule>(io_svc))
-            , muxer_module_(util::daemon::use_module<ppbox::mux::MuxModule>(io_svc))
+            , demuxer_module_(util::daemon::use_module<just::demux::DemuxModule>(io_svc))
+            , muxer_module_(util::daemon::use_module<just::mux::MuxModule>(io_svc))
             , demuxer_(NULL)
             , muxer_(NULL)
         {
@@ -100,7 +100,7 @@ namespace ppbox
         {
             LOG_DEBUG("[handle_play] ec:" << ec.message());
             boost::system::error_code ec1 = ec;
-            if (ec1 == ppbox::avformat::error::end_of_stream) {
+            if (ec1 == just::avformat::error::end_of_stream) {
                 ec1.clear();
             }
             response(ec1);
@@ -249,4 +249,4 @@ namespace ppbox
         }
 
     } // namespace mux
-} // namespace ppbox
+} // namespace just

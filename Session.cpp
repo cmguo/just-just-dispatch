@@ -1,11 +1,11 @@
 // Session.h
 
-#include "ppbox/dispatch/Common.h"
-#include "ppbox/dispatch/Session.h"
+#include "just/dispatch/Common.h"
+#include "just/dispatch/Session.h"
 
 #include <boost/bind.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -198,4 +198,4 @@ namespace ppbox
         }
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just

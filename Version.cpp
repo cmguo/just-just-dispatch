@@ -1,5 +1,5 @@
 // Version.cpp
 
-#include "ppbox/dispatch/Common.h"
+#include "just/dispatch/Common.h"
 #define VERSION_SOURCE
-#include "ppbox/dispatch/Version.h"
+#include "just/dispatch/Version.h"

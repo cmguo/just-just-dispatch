@@ -1,15 +1,15 @@
 // TaskDispatcher.h
 
-#ifndef _PPBOX_DISPATCH_TASK_DISPATCHER_H_
-#define _PPBOX_DISPATCH_TASK_DISPATCHER_H_
+#ifndef _JUST_DISPATCH_TASK_DISPATCHER_H_
+#define _JUST_DISPATCH_TASK_DISPATCHER_H_
 
-#include "ppbox/dispatch/DispatcherBase.h"
-#include "ppbox/dispatch/TaskInfo.h"
-#include "ppbox/dispatch/SinkGroup.h"
+#include "just/dispatch/DispatcherBase.h"
+#include "just/dispatch/TaskInfo.h"
+#include "just/dispatch/SinkGroup.h"
 
 #include <util/tools/ClassFactory.h>
 
-namespace ppbox
+namespace just
 {
     namespace dispatch
     {
@@ -171,8 +171,8 @@ namespace ppbox
         };
 
     } // namespace dispatch
-} // namespace ppbox
+} // namespace just
 
-#define PPBOX_REGISTER_DISPATCHER(p, c) UTIL_REGISTER_CLASS(ppbox::dispatch::TaskDispatcherFactory, p, c)
+#define JUST_REGISTER_DISPATCHER(p, c) UTIL_REGISTER_CLASS(just::dispatch::TaskDispatcherFactory, p, c)
 
-#endif // _PPBOX_DISPATCH_TASK_DISPATCHER_H_
+#endif // _JUST_DISPATCH_TASK_DISPATCHER_H_

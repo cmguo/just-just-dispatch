@@ -1,11 +1,11 @@
 // MergeDispatcher.h
 
-#ifndef _PPBOX_DISPATCH_MERGE_MERGE_DISPATCHER_H_
-#define _PPBOX_DISPATCH_MERGE_MERGE_DISPATCHER_H_
+#ifndef _JUST_DISPATCH_MERGE_MERGE_DISPATCHER_H_
+#define _JUST_DISPATCH_MERGE_MERGE_DISPATCHER_H_
 
-#include "ppbox/dispatch/TaskDispatcher.h"
+#include "just/dispatch/TaskDispatcher.h"
 
-namespace ppbox
+namespace just
 {
     namespace merge
     {
@@ -95,10 +95,10 @@ namespace ppbox
                 boost::system::error_code const & ec);
 
         private:
-            ppbox::merge::MergeModule & merge_module_;
+            just::merge::MergeModule & merge_module_;
 
             size_t  merge_close_token_;
-            ppbox::merge::MergerBase * merger_;
+            just::merge::MergerBase * merger_;
 
             std::string format_;
 
@@ -106,9 +106,9 @@ namespace ppbox
             bool pause_token_;
         };
 
-        PPBOX_REGISTER_DISPATCHER(0, MergeDispatcher);
+        JUST_REGISTER_DISPATCHER(0, MergeDispatcher);
 
     } // namespace dispatcher
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_DISPATCH_MERGE_MERGE_DISPATCHER_H_
+#endif // _JUST_DISPATCH_MERGE_MERGE_DISPATCHER_H_
