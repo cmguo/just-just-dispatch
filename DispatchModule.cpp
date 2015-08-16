@@ -44,14 +44,16 @@ namespace just
             threads_.clear();
         }
 
-        boost::system::error_code DispatchModule::startup()
+        bool DispatchModule::startup(
+            boost::system::error_code & ec)
         {
-            boost::system::error_code ec;
-            return ec;
+            return true;
         }
 
-        void DispatchModule::shutdown()
+        bool DispatchModule::shutdown(
+            boost::system::error_code & ec)
         {
+            return true;
         }
 
         bool DispatchModule::normalize_url(
