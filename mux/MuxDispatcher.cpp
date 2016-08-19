@@ -43,10 +43,10 @@ namespace just
         void MuxDispatcher::start_open(
             framework::string::Url const & url)
         {
-            LOG_DEBUG("[start_open] playlink:" << url.param(param_playlink) << " format:" << url.param(param_format));
+            LOG_DEBUG("[start_open] url:" << url.param(param_url) << " format:" << url.param(param_format));
             boost::system::error_code ec;
             demuxer_ = demuxer_module_.create(
-                framework::string::Url(url.param(param_playlink)), 
+                framework::string::Url(url.param(param_url)), 
                 url, 
                 ec);
             if (demuxer_) {

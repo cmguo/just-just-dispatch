@@ -39,7 +39,7 @@ namespace just
 
         class DispatcherBase;
 
-        static char const * const param_playlink = "playlink";
+        static char const * const param_url = "url";
         static char const * const param_format = "format";
         static char const * const param_session = "session";
 

@@ -41,11 +41,11 @@ namespace just
         void MergeDispatcher::start_open(
             framework::string::Url const & url)
         {
-            LOG_DEBUG("[start_open] playlink:" << url.param(param_playlink));
+            LOG_DEBUG("[start_open] url:" << url.param(param_url));
             format_ = url.param(param_format);
             boost::system::error_code ec;
             merger_ = merge_module_.create(
-                framework::string::Url(url.param(param_playlink)), 
+                framework::string::Url(url.param(param_url)), 
                 url, ec);
             if (merger_) {
                 merger_->async_open(

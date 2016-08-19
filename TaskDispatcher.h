@@ -28,7 +28,7 @@ namespace just
 
         public:
             virtual void async_open(
-                framework::string::Url const & playlink, 
+                framework::string::Url const & url, 
                 response_t const & resp);
 
             virtual bool setup(

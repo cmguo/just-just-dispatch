@@ -157,7 +157,7 @@ namespace just
         bool SessionGroup::accept(
             framework::string::Url const & url)
         {
-            return url_.param(param_playlink) == url.param(param_playlink) 
+            return url_.param(param_url) == url.param(param_url) 
                 && dispatcher_.accept(url);
         }
 

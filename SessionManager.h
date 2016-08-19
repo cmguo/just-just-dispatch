@@ -39,7 +39,7 @@ namespace just
         public:
             void async_open(
                 boost::uint32_t&  sid,      // »á»°ID
-                framework::string::Url const & playlink, 
+                framework::string::Url const & url, 
                 response_t const & resp);
 
             bool setup(
