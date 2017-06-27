@@ -77,7 +77,7 @@ namespace just
                         io_svc_.post(boost::bind(resp, error::session_not_found));
                         return;
                     }
-                    // ÏÈÍ¨¹ıÏÂÃæ´´½¨Ö÷»á»°£¬ÔÙ¼ÌĞø´´½¨´Ó»á»°
+                    // å…ˆé€šè¿‡ä¸‹é¢åˆ›å»ºä¸»ä¼šè¯ï¼Œå†ç»§ç»­åˆ›å»ºä»ä¼šè¯
                 } else {
                     main_ses = iter->second;
                 }
@@ -86,14 +86,14 @@ namespace just
             boost::system::error_code ec;
 
             if (main_ses) {
-                // Ö÷»á»°ÒÑ¾­´æÔÚ£¬²»ĞèÒª×öÊ²Ã´
-                if (next_ == NULL || main_ses != next_->next()) {
+                // ä¸»ä¼šè¯å·²ç»å­˜åœ¨ï¼Œä¸éœ€è¦åšä»€ä¹ˆ
+                if (next_ == NULL || main_ses != next_->next()) { // å‰æ²¡æœ‰ä¼šè¯ç»„æˆ–è€…ä¸æ˜¯ä¼šè¯ç»„çš„ä¸‹ä¸€ä¸ªä¼šè¯
                     ec = error::session_kick_out;
                 } else {
                 }
-            } else if (current_ == NULL) {
+            } else if (current_ == NULL) { // å½“å‰æ²¡æœ‰ä¼šè¯ç»„
                 current_ = next_ = create_group(url, ec);
-            } else if (next_ != current_) {
+            } else if (next_ != current_) { // æœ‰â€œå½“å‰ä¼šè¯ç»„â€å’Œâ€œç­‰å¾…ä¼šè¯ç»„â€
                 if (!next_->accept(url)) {
                     SessionGroup * group = create_group(url, ec);
                     if (group) {
@@ -102,7 +102,7 @@ namespace just
                     }
                 } else {
                 }
-            } else if (!next_->accept(url)) {
+            } else if (!next_->accept(url)) { // åªæœ‰â€œå½“å‰ä¼šè¯ç»„â€
                 SessionGroup * group = create_group(url, ec);
                 if (group) {
                     if (current_->busy()) {
@@ -145,7 +145,7 @@ namespace just
                     }
                 } else {
                     ses = new Session(io_svc_, url, resp);
-                    main_ses->queue_sub(ses); // ÀïÃæ»áµ÷ÓÃ»Øµ÷
+                    main_ses->queue_sub(ses); // é‡Œé¢ä¼šè°ƒç”¨å›è°ƒ
                 }
                 sid = ses->id();
                 cancel_timer();
@@ -338,7 +338,7 @@ namespace just
         }
 
         bool SessionManager::cancel(
-            boost::uint32_t sid,        // »á»°ID
+            boost::uint32_t sid,        // ä¼šè¯ID
             boost::system::error_code & ec)
         {
             LOG_XXX("cancel");
@@ -421,7 +421,7 @@ namespace just
         }
 
         Session * SessionManager::user_session(
-            boost::uint32_t sid,        // »á»°ID
+            boost::uint32_t sid,        // ä¼šè¯ID
             Session *& main_ses, 
             boost::system::error_code & ec)
         {
@@ -440,7 +440,7 @@ namespace just
         }
 
         Session * SessionManager::find_session(
-            boost::uint32_t sid,        // »á»°ID
+            boost::uint32_t sid,        // ä¼šè¯ID
             SessionGroup *& group, 
             Session *& main_ses)
         {
@@ -485,12 +485,12 @@ namespace just
             canceling_ = false;
 
             assert(current_);
-            // ÏÈ´¦ÀíºÃÄÚ²¿×´Ì¬£¬ÔÙµ÷ÓÃ»Øµ÷
+            // å…ˆå¤„ç†å¥½å†…éƒ¨çŠ¶æ€ï¼Œå†è°ƒç”¨å›è°ƒ
             SessionGroup * current = current_;
             if (next_ != current_) {
                 current_ = next_;
             }
-            // µ÷ÓÃ»Øµ÷
+            // è°ƒç”¨å›è°ƒ
             current->response(ec);
             if (current != current_) {
                 delete_group(current);
@@ -501,8 +501,8 @@ namespace just
                 handle_timer(timer_id_, ec);
             }
 
-            if (current_) { // handle_timerÓĞ¿ÉÄÜÉ¾³ıÁËcurrent_
-                if (current_->empty()) { // ÔÚÓ¦´ğÖĞ£¬¿ÉÄÜÉ¾³ıÁËÑÓ³ÙÉ¾³ıµÄ»á»°
+            if (current_) { // handle_timeræœ‰å¯èƒ½åˆ é™¤äº†current_
+                if (current_->empty()) { // åœ¨åº”ç­”ä¸­ï¼Œå¯èƒ½åˆ é™¤äº†å»¶è¿Ÿåˆ é™¤çš„ä¼šè¯
                     start_timer();
                 }
                 next_request();

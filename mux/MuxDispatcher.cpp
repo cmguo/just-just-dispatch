@@ -13,6 +13,8 @@
 #include <just/demux/DemuxModule.h>
 #include <just/demux/base/DemuxerBase.h>
 
+#include <just/common/UrlHelper.h>
+
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
 
@@ -211,12 +213,15 @@ namespace just
             boost::system::error_code & ec)
         {
             TaskDispatcher::switch_to(url, ec);
+            if (ec) return false;
             std::string format = url.param(param_format);
             LOG_DEBUG("[assign] format:" << format);
-            if (!ec && format_ != format) {
+            if (format_ != format) {
                 close_muxer(ec);
                 format_ = format;
                 open_muxer(url, ec);
+            } else {
+                just::common::apply_config(muxer_->config(), url, "mux.");
             }
             if (!ec) {
                 muxer_->reset(ec);
