@@ -1,5 +1,7 @@
 // MergeDispatcher.cpp
 
+#ifndef JUST_DISABLE_MERGE
+
 #include "just/dispatch/Common.h"
 #include "just/dispatch/merge/MergeDispatcher.h"
 #include "just/dispatch/merge/MergeTask.h"
@@ -219,3 +221,5 @@ namespace just
 
     } // namespace mux
 } // namespace just
+
+#endif
